@@ -1,0 +1,125 @@
+:root {
+  --bg: #0b0d14;
+  --surface: #141826;
+  --border: #252b40;
+  --text: #eef0f7;
+  --muted: #9aa2bd;
+  --accent: #7c5cff;
+  --ok: #3ddc97;
+  --error: #ff6b6b;
+  color-scheme: dark;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: radial-gradient(circle at 50% -10%, #1d2140 0%, var(--bg) 55%);
+  background-attachment: fixed;
+  color: var(--text);
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  line-height: 1.5;
+  -webkit-text-size-adjust: 100%;
+}
+
+.page {
+  max-width: 640px;
+  min-height: 100vh;
+  margin: 0 auto;
+  padding: 48px 16px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.hero {
+  text-align: center;
+}
+
+.hero__badge {
+  display: inline-block;
+  padding: 4px 12px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  color: var(--muted);
+  font-size: 13px;
+  letter-spacing: 0.04em;
+}
+
+.hero__title {
+  margin: 16px 0 8px;
+  font-size: clamp(36px, 10vw, 56px);
+  line-height: 1.1;
+  background: linear-gradient(135deg, #fff 30%, var(--accent));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.hero__text {
+  margin: 0 auto;
+  max-width: 480px;
+  color: var(--muted);
+}
+
+.card {
+  padding: 20px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+}
+
+.card__title {
+  margin: 0 0 12px;
+  font-size: 16px;
+}
+
+.status {
+  padding: 12px 14px;
+  border-radius: 10px;
+  font-size: 14px;
+}
+
+.status--loading {
+  color: var(--muted);
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.status--error {
+  color: var(--error);
+  background: rgba(255, 107, 107, 0.1);
+}
+
+.status--ok {
+  background: rgba(61, 220, 151, 0.08);
+}
+
+.status__title {
+  margin-bottom: 8px;
+  color: var(--ok);
+  font-weight: 600;
+}
+
+.status__list {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: 4px 16px;
+  margin: 0;
+}
+
+.status__list dt {
+  color: var(--muted);
+}
+
+.status__list dd {
+  margin: 0;
+}
+
+.footer {
+  margin-top: auto;
+  text-align: center;
+  color: var(--muted);
+  font-size: 13px;
+}

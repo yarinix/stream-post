@@ -1,0 +1,51 @@
+# Render Blueprint для Stream Post.
+# Создаёт: backend (FastAPI), frontend (статический сайт) и базу PostgreSQL.
+databases:
+  - name: stream-post-db
+    plan: free
+    databaseName: stream_post
+
+services:
+  # Backend: Python + FastAPI
+  - type: web
+    name: stream-post-api
+    runtime: python
+    plan: free
+    rootDir: backend
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /api/health
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.12.8
+      - key: ENVIRONMENT
+        value: production
+      - key: DATABASE_URL
+        fromDatabase:
+          name: stream-post-db
+          property: connectionString
+      # Адрес frontend (для CORS). Заполните в панели Render после первого деплоя.
+      # Если frontend ходит в API через /api (rewrite ниже), CORS не обязателен.
+      - key: CORS_ORIGINS
+        sync: false
+
+  # Frontend: React + Vite (статический сайт)
+  - type: web
+    name: stream-post-web
+    runtime: static
+    rootDir: frontend
+    buildCommand: npm install && npm run build
+    staticPublishPath: dist
+    envVars:
+      - key: NODE_VERSION
+        value: 22
+    routes:
+      # Запросы /api/* перенаправляются на backend.
+      # Если имя stream-post-api занято и Render дал другой адрес — замените его здесь.
+      - type: rewrite
+        source: /api/*
+        destination: https://stream-post-api.onrender.com/api/*
+      # Все остальные адреса отдают index.html (SPA).
+      - type: rewrite
+        source: /*
+        destination: /index.html
