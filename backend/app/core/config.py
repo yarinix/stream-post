@@ -13,18 +13,16 @@ class Settings(BaseSettings):
     app_version: str = "0.1.0"
     environment: str = "development"
 
-    # Список адресов frontend через запятую (для CORS).
-    cors_origins: list[str] = ["http://localhost:5173"]
+    # Адреса frontend через запятую (для CORS). Хранится строкой, потому что
+    # pydantic-settings читает списки из переменных окружения только как JSON.
+    cors_origins: str = "http://localhost:5173"
 
     # Строка подключения к PostgreSQL. Пусто — база не подключена.
     database_url: str | None = None
 
-    @field_validator("cors_origins", mode="before")
-    @classmethod
-    def split_origins(cls, value):
-        if isinstance(value, str):
-            return [item.strip() for item in value.split(",") if item.strip()]
-        return value
+    @property
+    def cors_origins_list(self) -> list[str]:
+        return [item.strip() for item in self.cors_origins.split(",") if item.strip()]
 
     @field_validator("database_url", mode="before")
     @classmethod
