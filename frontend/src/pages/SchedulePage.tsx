@@ -3,17 +3,19 @@ import { useCallback, useEffect, useState } from "react";
 import ExportButtons from "../features/schedule/components/ExportButtons";
 import LogosEditor from "../features/schedule/components/LogosEditor";
 import MatchesEditor from "../features/schedule/components/MatchesEditor";
+import PostTextEditor from "../features/schedule/components/PostTextEditor";
 import ScheduleForm from "../features/schedule/components/ScheduleForm";
 import SchedulePreview from "../features/schedule/components/SchedulePreview";
 import { CANVAS_PRESETS } from "../features/schedule/constants";
 import { createDefaultSchedule } from "../features/schedule/defaults";
+import { usePostTextSettings } from "../features/schedule/hooks/usePostTextSettings";
 import { useScheduleImage } from "../features/schedule/hooks/useScheduleImage";
 import { useTeamLogos } from "../features/schedule/hooks/useTeamLogos";
 import { loadSchedule, saveSchedule } from "../features/schedule/storage";
 import type { Match, ScheduleData } from "../features/schedule/types";
 import "../features/schedule/schedule.css";
 
-export type ScheduleTab = "edit" | "logos" | "preview";
+export type ScheduleTab = "edit" | "logos" | "preview" | "text";
 
 interface SchedulePageProps {
   initialTab?: ScheduleTab;
@@ -24,6 +26,7 @@ export default function SchedulePage({ initialTab = "edit" }: SchedulePageProps)
   const [tab, setTab] = useState<ScheduleTab>(initialTab);
   const [saved, setSaved] = useState(false);
   const { logos, ready, error, setError, add, remove, rename, replace } = useTeamLogos();
+  const { settings, patch: patchSettings } = usePostTextSettings();
   const image = useScheduleImage(data, logos);
 
   useEffect(() => {
@@ -67,7 +70,8 @@ export default function SchedulePage({ initialTab = "edit" }: SchedulePageProps)
         <span className="eyebrow">MLBB · КАРТИНКА ДЛЯ TELEGRAM</span>
         <h1 className="schedule-page__title">Расписание матчей</h1>
         <p className="schedule-page__subtitle">
-          Меняйте данные пальцем — картинка обновляется сама. Черновик и логотипы сохраняются на устройстве.
+          Меняйте данные пальцем — картинка и текст поста обновляются сами. Черновик, логотипы и ссылка
+          на стрим сохраняются на устройстве.
         </p>
       </div>
 
@@ -85,6 +89,10 @@ export default function SchedulePage({ initialTab = "edit" }: SchedulePageProps)
           <div className="col-edit__section" data-section="main">
             <ScheduleForm data={data} onChange={patch} />
             <MatchesEditor matches={data.matches} logos={logos} onChange={setMatches} />
+          </div>
+
+          <div className="col-edit__section" data-section="text">
+            <PostTextEditor data={data} settings={settings} onSettingsChange={patchSettings} />
           </div>
 
           <div className="col-edit__section" data-section="logos">
@@ -144,6 +152,17 @@ export default function SchedulePage({ initialTab = "edit" }: SchedulePageProps)
             ▤
           </span>
           <span>Картинка</span>
+        </button>
+        <button
+          type="button"
+          className={`bottom-nav__item${tab === "text" ? " bottom-nav__item--active" : ""}`}
+          aria-current={tab === "text" ? "page" : undefined}
+          onClick={() => setTab("text")}
+        >
+          <span className="bottom-nav__icon" aria-hidden="true">
+            ≡
+          </span>
+          <span>Текст</span>
         </button>
       </nav>
     </main>

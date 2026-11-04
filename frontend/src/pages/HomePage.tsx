@@ -7,7 +7,8 @@ export default function HomePage() {
         <span className="hero__badge">MLBB · ФОТОПОСТЫ</span>
         <h1 className="hero__title">Stream Post</h1>
         <p className="hero__text">
-          Готовьте картинки с расписанием матчей MLBB прямо с телефона и публикуйте их в Telegram.
+          Готовьте картинку и текст поста с расписанием матчей MLBB прямо с телефона и публикуйте их
+          в Telegram.
         </p>
       </header>
 
@@ -27,12 +28,19 @@ export default function HomePage() {
             →
           </span>
         </a>
+        <a className="tool" href="#/schedule?tab=text">
+          <span className="tool__name">Текст поста</span>
+          <span className="tool__text">Шаблон со списком матчей, датой и ссылкой на стрим — можно править и копировать</span>
+          <span className="tool__arrow" aria-hidden="true">
+            →
+          </span>
+        </a>
       </section>
 
       <section className="card">
         <h2 className="card__title">Что дальше</h2>
         <p className="card__text">
-          Сейчас проект делает только фотографии для постов. Подключение к Telegram и отправка постов
+          Проект готовит и фотографию, и подпись к ней. Подключение к Telegram и отправка постов
           напрямую появятся в следующих версиях.
         </p>
       </section>
@@ -42,7 +50,7 @@ export default function HomePage() {
         <BackendStatus />
       </section>
 
-      <footer className="footer">v0.3.0</footer>
+      <footer className="footer">v0.4.0</footer>
     </main>
   );
 }

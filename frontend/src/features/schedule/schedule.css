@@ -708,6 +708,111 @@ select.input {
   font-size: 12px;
 }
 
+/* Текст поста */
+.post-text__field {
+  margin-bottom: 0;
+}
+
+.post-text__area {
+  min-height: 300px;
+  padding: 14px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+  font-size: 16px; /* 16px — чтобы iPhone не приближал страницу при вводе */
+  line-height: 1.55;
+  white-space: pre-wrap;
+  resize: vertical;
+}
+
+.post-text__facts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.fact {
+  padding: 6px 10px;
+  background: rgba(124, 92, 255, 0.12);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.35;
+}
+
+.post-text__notice {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+  padding: 10px 12px;
+  background: rgba(245, 196, 81, 0.1);
+  border: 1px solid rgba(245, 196, 81, 0.35);
+  border-radius: 10px;
+  color: var(--text);
+  font-size: 13px;
+}
+
+.post-text__actions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.post-text__settings {
+  margin-top: 16px;
+}
+
+.post-text__settings .panel__summary {
+  min-height: 56px;
+  padding: 12px 14px;
+}
+
+.post-text__settings .panel__body {
+  padding: 14px;
+}
+
+.switch {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 56px;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--border);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.switch:last-child {
+  border-bottom: 0;
+}
+
+.switch input {
+  flex: none;
+  width: 24px;
+  height: 24px;
+  margin: 0;
+  accent-color: var(--accent);
+  cursor: pointer;
+}
+
+.switch__text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.switch__text small {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 400;
+}
+
 /* Нижняя панель навигации — как в мобильном приложении */
 .bottom-nav {
   display: none;
@@ -743,10 +848,15 @@ select.input {
   }
 
   .schedule-layout[data-tab="edit"] [data-section="logos"],
+  .schedule-layout[data-tab="edit"] [data-section="text"],
   .schedule-layout[data-tab="edit"] .col-preview,
   .schedule-layout[data-tab="logos"] [data-section="main"],
+  .schedule-layout[data-tab="logos"] [data-section="text"],
   .schedule-layout[data-tab="logos"] .col-preview,
-  .schedule-layout[data-tab="preview"] .col-edit {
+  .schedule-layout[data-tab="preview"] .col-edit,
+  .schedule-layout[data-tab="text"] [data-section="main"],
+  .schedule-layout[data-tab="text"] [data-section="logos"],
+  .schedule-layout[data-tab="text"] .col-preview {
     display: none;
   }
 
@@ -766,7 +876,7 @@ select.input {
     left: 0;
     z-index: 20;
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(4, 1fr);
     gap: 4px;
     padding: 8px 10px calc(8px + env(safe-area-inset-bottom, 0px));
     background: rgba(15, 18, 30, 0.94);
