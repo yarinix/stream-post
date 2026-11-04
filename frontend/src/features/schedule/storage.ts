@@ -8,6 +8,10 @@ function asString(value: unknown, fallback: string): string {
   return typeof value === "string" ? value : fallback;
 }
 
+function asLogoId(value: unknown): string | null {
+  return typeof value === "string" && value.trim() ? value : null;
+}
+
 function sanitizeMatch(input: unknown): Match | null {
   if (typeof input !== "object" || input === null) return null;
   const raw = input as Record<string, unknown>;
@@ -20,6 +24,8 @@ function sanitizeMatch(input: unknown): Match | null {
     teamB: asString(raw.teamB, ""),
     time: asString(raw.time, "18:00"),
     format,
+    logoA: asLogoId(raw.logoA),
+    logoB: asLogoId(raw.logoB),
   };
 }
 

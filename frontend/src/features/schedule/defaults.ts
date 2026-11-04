@@ -14,6 +14,8 @@ export function createMatch(partial: Partial<Omit<Match, "id">> = {}): Match {
     teamB: "",
     time: "18:00",
     format: "BO3",
+    logoA: null,
+    logoB: null,
     ...partial,
   };
 }

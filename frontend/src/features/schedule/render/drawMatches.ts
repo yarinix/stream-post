@@ -1,3 +1,5 @@
+import { findTeamLogo } from "../logos/types";
+import type { RenderLogo } from "../logos/types";
 import type { Match, Theme } from "../types";
 import {
   fitFontSize,
@@ -24,7 +26,44 @@ function drawPlaceholder(ctx: Ctx, region: Region): void {
   ctx.fillText("Добавьте матчи", region.x + region.w / 2, region.y + region.h / 2);
 }
 
-function drawRow(ctx: Ctx, match: Match, x: number, y: number, w: number, h: number, theme: Theme): void {
+/** Рисует логотип в квадрате с подложкой — чтобы PNG с прозрачным фоном читался на тёмной карточке. */
+function drawLogo(ctx: Ctx, logo: RenderLogo, x: number, y: number, size: number): void {
+  const radius = size * 0.22;
+  const pad = size * 0.09;
+  const inner = size - pad * 2;
+  const { image } = logo;
+  const imageWidth = Math.max(1, image.width);
+  const imageHeight = Math.max(1, image.height);
+  const scale = Math.min(inner / imageWidth, inner / imageHeight);
+  const w = imageWidth * scale;
+  const h = imageHeight * scale;
+
+  ctx.save();
+  roundRectPath(ctx, x, y, size, size, radius);
+  ctx.fillStyle = "rgba(255, 255, 255, 0.1)";
+  ctx.fill();
+  ctx.clip();
+  ctx.drawImage(image, x + (size - w) / 2, y + (size - h) / 2, w, h);
+  ctx.restore();
+
+  ctx.save();
+  roundRectPath(ctx, x, y, size, size, radius);
+  ctx.strokeStyle = "rgba(255, 255, 255, 0.2)";
+  ctx.lineWidth = 2;
+  ctx.stroke();
+  ctx.restore();
+}
+
+function drawRow(
+  ctx: Ctx,
+  match: Match,
+  x: number,
+  y: number,
+  w: number,
+  h: number,
+  theme: Theme,
+  logos: RenderLogo[],
+): void {
   const radius = Math.min(22, h * 0.2);
 
   // Карточка
@@ -75,18 +114,48 @@ function drawRow(ctx: Ctx, match: Match, x: number, y: number, w: number, h: num
   ctx.textAlign = "center";
   ctx.fillText(match.format, badgeX + badgeWidth / 2, midY + 1);
 
-  // Команды
-  const teamsLeft = x + timeColumn + 4 + 30;
-  const teamsRight = badgeX - 24;
-  const centerX = (teamsLeft + teamsRight) / 2;
+  // Область команд
+  const contentLeft = x + timeColumn + 4 + 30;
+  const contentRight = badgeX - 24;
+  const logoA = findTeamLogo(logos, match.teamA, match.logoA);
+  const logoB = findTeamLogo(logos, match.teamB, match.logoB);
+  const areaWidth = Math.max(0, contentRight - contentLeft);
+  const logoGap = Math.max(10, h * 0.08);
+  let logoSize = Math.min(h * 0.42, 72, areaWidth * 0.16);
+  let textLeft = contentLeft;
+  let textRight = contentRight;
+
+  const applyLogoSpace = () => {
+    textLeft = contentLeft;
+    textRight = contentRight;
+    if (logoA && logoSize > 12) textLeft += logoSize + logoGap;
+    if (logoB && logoSize > 12) textRight -= logoSize + logoGap;
+  };
+
+  applyLogoSpace();
+  // Названия команд важнее логотипов: если места мало, ужимаем именно логотип.
+  if (textRight - textLeft < 320 && logoSize > 24) {
+    logoSize = Math.max(24, logoSize * 0.7);
+    applyLogoSpace();
+  }
+
+  if (logoA && logoSize > 12) {
+    drawLogo(ctx, logoA, contentLeft, midY - logoSize / 2, logoSize);
+  }
+  if (logoB && logoSize > 12) {
+    drawLogo(ctx, logoB, contentRight - logoSize, midY - logoSize / 2, logoSize);
+  }
+
+  const centerX = (textLeft + textRight) / 2;
   const teamA = (match.teamA.trim() || "TBD").toUpperCase();
   const teamB = (match.teamB.trim() || "TBD").toUpperCase();
 
   const maxNameSize = Math.min(46, h * 0.34);
   const provisionalVs = Math.max(maxNameSize * 0.55, 14);
   setFont(ctx, 800, provisionalVs);
-  const vsHalf = ctx.measureText("VS").width / 2 + 22;
-  const maxSide = Math.max(40, (teamsRight - teamsLeft) / 2 - vsHalf);
+  const vsHalf = ctx.measureText("VS").width / 2 + 16;
+  const maxSide = Math.max(40, (textRight - textLeft) / 2 - vsHalf);
+  const availableWidth = Math.max(40, textRight - textLeft - vsHalf * 2);
 
   const symmetricSize = Math.min(
     fitFontSize(ctx, teamA, 800, maxSide, maxNameSize, 16),
@@ -102,12 +171,11 @@ function drawRow(ctx: Ctx, match: Match, x: number, y: number, w: number, h: num
 
   if (symmetricSize < Math.min(28, maxNameSize * 0.75)) {
     // Одно из названий длинное: не сжимаем обе команды, а делим место по их длине.
-    const available = teamsRight - teamsLeft - vsHalf * 2;
-    const minSize = 22;
+    const minSize = 18;
     nameSize = Math.min(maxNameSize, symmetricSize * 2);
     while (nameSize > minSize) {
       setFont(ctx, 800, nameSize);
-      if (ctx.measureText(teamA).width + ctx.measureText(teamB).width <= available) break;
+      if (ctx.measureText(teamA).width + ctx.measureText(teamB).width <= availableWidth) break;
       nameSize -= 2;
     }
     nameSize = Math.max(nameSize, minSize);
@@ -115,22 +183,22 @@ function drawRow(ctx: Ctx, match: Match, x: number, y: number, w: number, h: num
 
     let widthA = ctx.measureText(teamA).width;
     let widthB = ctx.measureText(teamB).width;
-    if (widthA + widthB > available) {
+    if (widthA + widthB > availableWidth) {
       // Даже на минимальном размере не влезает: обрезаем более длинное название.
-      const half = available / 2;
+      const half = availableWidth / 2;
       if (widthA > half && widthB > half) {
         textA = truncateToWidth(ctx, teamA, half);
         textB = truncateToWidth(ctx, teamB, half);
       } else if (widthA > widthB) {
-        textA = truncateToWidth(ctx, teamA, available - widthB);
+        textA = truncateToWidth(ctx, teamA, availableWidth - widthB);
       } else {
-        textB = truncateToWidth(ctx, teamB, available - widthA);
+        textB = truncateToWidth(ctx, teamB, availableWidth - widthA);
       }
       widthA = ctx.measureText(textA).width;
       widthB = ctx.measureText(textB).width;
     }
 
-    const startX = teamsLeft + (teamsRight - teamsLeft - (widthA + widthB + vsHalf * 2)) / 2;
+    const startX = textLeft + (textRight - textLeft - (widthA + widthB + vsHalf * 2)) / 2;
     teamAEnd = startX + widthA;
     vsX = teamAEnd + vsHalf;
     teamBStart = vsX + vsHalf;
@@ -154,7 +222,13 @@ function drawRow(ctx: Ctx, match: Match, x: number, y: number, w: number, h: num
 }
 
 /** Рисует список матчей в заданной области. Размеры строк подстраиваются под количество матчей. */
-export function drawMatches(ctx: Ctx, matches: Match[], region: Region, theme: Theme): void {
+export function drawMatches(
+  ctx: Ctx,
+  matches: Match[],
+  region: Region,
+  theme: Theme,
+  logos: RenderLogo[] = [],
+): void {
   const count = matches.length;
   if (count === 0) {
     drawPlaceholder(ctx, region);
@@ -168,6 +242,6 @@ export function drawMatches(ctx: Ctx, matches: Match[], region: Region, theme: T
   const startY = region.y + Math.max(0, (region.h - totalHeight) * 0.4);
 
   matches.forEach((match, index) => {
-    drawRow(ctx, match, region.x, startY + index * (rowHeight + gap), region.w, rowHeight, theme);
+    drawRow(ctx, match, region.x, startY + index * (rowHeight + gap), region.w, rowHeight, theme, logos);
   });
 }

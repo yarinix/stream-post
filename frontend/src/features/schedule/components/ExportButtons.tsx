@@ -26,7 +26,7 @@ export default function ExportButtons({ blob, filename }: ExportButtonsProps) {
       <div className="export__buttons">
         {shareAvailable ? (
           <button type="button" className="btn btn--block" disabled={!blob} onClick={handleShare}>
-            Поделиться / сохранить в Фото
+            Сохранить в Фото / Поделиться
           </button>
         ) : null}
         <button
@@ -38,8 +38,15 @@ export default function ExportButtons({ blob, filename }: ExportButtonsProps) {
           Скачать PNG
         </button>
       </div>
-      {message ? <p className="export__message">{message}</p> : null}
-      <p className="export__hint">На iPhone можно также удерживать палец на картинке и выбрать «Сохранить в Фото».</p>
+      {message ? (
+        <p className="export__message" role="status">
+          {message}
+        </p>
+      ) : null}
+      <p className="export__hint">
+        Сохраните фото и прикрепите его к посту в Telegram — пока проект делает только картинки.
+        На iPhone можно также удерживать палец на картинке и выбрать «Сохранить в Фото».
+      </p>
     </div>
   );
 }

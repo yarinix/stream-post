@@ -4,11 +4,10 @@ export default function HomePage() {
   return (
     <main className="page">
       <header className="hero">
-        <span className="hero__badge">MLBB · Telegram</span>
+        <span className="hero__badge">MLBB · ФОТОПОСТЫ</span>
         <h1 className="hero__title">Stream Post</h1>
         <p className="hero__text">
-          Платформа для создания профессиональных публикаций в Telegram для
-          киберспортивных стримеров.
+          Готовьте картинки с расписанием матчей MLBB прямо с телефона и публикуйте их в Telegram.
         </p>
       </header>
 
@@ -16,7 +15,14 @@ export default function HomePage() {
         <h2 className="card__title">Инструменты</h2>
         <a className="tool" href="#/schedule">
           <span className="tool__name">Расписание матчей</span>
-          <span className="tool__text">Картинка с расписанием для публикации в Telegram</span>
+          <span className="tool__text">Картинка с матчами, временем и форматом BO</span>
+          <span className="tool__arrow" aria-hidden="true">
+            →
+          </span>
+        </a>
+        <a className="tool" href="#/schedule?tab=logos">
+          <span className="tool__name">Логотипы команд</span>
+          <span className="tool__text">Загрузите эмблемы один раз — они сохранятся на устройстве</span>
           <span className="tool__arrow" aria-hidden="true">
             →
           </span>
@@ -24,11 +30,19 @@ export default function HomePage() {
       </section>
 
       <section className="card">
+        <h2 className="card__title">Что дальше</h2>
+        <p className="card__text">
+          Сейчас проект делает только фотографии для постов. Подключение к Telegram и отправка постов
+          напрямую появятся в следующих версиях.
+        </p>
+      </section>
+
+      <section className="card">
         <h2 className="card__title">Состояние системы</h2>
         <BackendStatus />
       </section>
 
-      <footer className="footer">v0.2.0</footer>
+      <footer className="footer">v0.3.0</footer>
     </main>
   );
 }

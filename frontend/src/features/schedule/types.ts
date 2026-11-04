@@ -11,6 +11,9 @@ export interface Match {
   /** Время в формате HH:MM (как отдаёт <input type="time">). */
   time: string;
   format: MatchFormat;
+  /** Явно выбранный логотип (id из библиотеки). null — подобрать по названию команды. */
+  logoA?: string | null;
+  logoB?: string | null;
 }
 
 export interface ScheduleData {
