@@ -16,7 +16,9 @@ export default function App() {
   if (path === "/schedule") {
     const requested = new URLSearchParams(query ?? "").get("tab");
     const initialTab: ScheduleTab =
-      requested === "logos" || requested === "preview" ? requested : "edit";
+      requested === "logos" || requested === "preview" || requested === "text"
+        ? requested
+        : "edit";
     return <SchedulePage initialTab={initialTab} />;
   }
 
