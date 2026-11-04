@@ -5,7 +5,7 @@ import { loadLogoImages } from "../logos/image";
 import type { TeamLogo } from "../logos/types";
 import { canvasToBlob } from "../render/exportImage";
 import { renderSchedule } from "../render/renderSchedule";
-import type { ScheduleData } from "../types";
+import type { PostMode, ScheduleData } from "../types";
 
 export interface ScheduleImage {
   url: string | null;
@@ -16,8 +16,12 @@ export interface ScheduleImage {
 
 const RENDER_DELAY_MS = 200;
 
-/** Перерисовывает картинку при изменении данных или библиотеки логотипов. */
-export function useScheduleImage(data: ScheduleData, logos: TeamLogo[]): ScheduleImage {
+/** Перерисовывает картинку при изменении данных, логотипов или режима поста. */
+export function useScheduleImage(
+  data: ScheduleData,
+  logos: TeamLogo[],
+  mode: PostMode = "schedule",
+): ScheduleImage {
   const [image, setImage] = useState<ScheduleImage>({ url: null, blob: null, busy: true, error: null });
   const lastUrl = useRef<string | null>(null);
 
@@ -29,7 +33,7 @@ export function useScheduleImage(data: ScheduleData, logos: TeamLogo[]): Schedul
       try {
         const [, renderLogos] = await Promise.all([ensureFonts(), loadLogoImages(logos)]);
         if (cancelled) return;
-        const blob = await canvasToBlob(renderSchedule(data, renderLogos));
+        const blob = await canvasToBlob(renderSchedule(data, renderLogos, mode));
         if (cancelled) return;
 
         const url = URL.createObjectURL(blob);
@@ -47,7 +51,7 @@ export function useScheduleImage(data: ScheduleData, logos: TeamLogo[]): Schedul
       cancelled = true;
       window.clearTimeout(timer);
     };
-  }, [data, logos]);
+  }, [data, logos, mode]);
 
   useEffect(() => {
     return () => {

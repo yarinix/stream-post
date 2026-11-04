@@ -21,7 +21,7 @@ export const DEFAULT_POST_TEXT_SETTINGS: PostTextSettings = {
  * Версия шаблона: при его изменении сохранённая ручная правка сбрасывается,
  * иначе пользователь продолжал бы видеть текст по старому шаблону.
  */
-export const POST_TEMPLATE_VERSION = 2;
+export const POST_TEMPLATE_VERSION = 3;
 
 /** Ручная правка итогового текста. signature защищает от склеивания со старыми данными. */
 export interface PostTextDraft {

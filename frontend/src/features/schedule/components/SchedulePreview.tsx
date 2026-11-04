@@ -5,9 +5,11 @@ import type { CanvasPresetId } from "../types";
 interface SchedulePreviewProps {
   image: ScheduleImage;
   preset: CanvasPresetId;
+  /** Название режима — попадает в alt картинки. */
+  label?: string;
 }
 
-export default function SchedulePreview({ image, preset }: SchedulePreviewProps) {
+export default function SchedulePreview({ image, preset, label = "Расписание матчей" }: SchedulePreviewProps) {
   const { width, height } = CANVAS_PRESETS[preset];
 
   return (
@@ -17,7 +19,7 @@ export default function SchedulePreview({ image, preset }: SchedulePreviewProps)
         <img
           className={`preview__img${image.busy ? " preview__img--busy" : ""}`}
           src={image.url}
-          alt="Предпросмотр картинки с расписанием"
+          alt={`Предпросмотр картинки: ${label}`}
         />
       ) : (
         <div className="preview__placeholder">{image.error ?? "Готовим картинку…"}</div>

@@ -4,6 +4,9 @@ export type CanvasPresetId = "post" | "square" | "story";
 
 export type ThemeId = "violet" | "gold" | "crimson" | "cyan";
 
+/** Тип поста: одни и те же матчи, но разное содержимое центра строк. */
+export type PostMode = "schedule" | "predict" | "results";
+
 export interface Match {
   id: string;
   teamA: string;
@@ -14,6 +17,12 @@ export interface Match {
   /** Явно выбранный логотип (id из библиотеки). null — подобрать по названию команды. */
   logoA?: string | null;
   logoB?: string | null;
+  /** Прогноз стримера. null — счёт ещё не выставлен. */
+  predictA?: number | null;
+  predictB?: number | null;
+  /** Финальный результат матча. null — матч ещё не сыгран. */
+  resultA?: number | null;
+  resultB?: number | null;
 }
 
 export interface ScheduleData {

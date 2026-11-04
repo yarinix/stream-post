@@ -8,7 +8,7 @@ import {
   type PostTextSettings,
 } from "../postText/settings";
 import { buildPostText, type PostTextInfo } from "../postText/template";
-import type { ScheduleData } from "../types";
+import type { PostMode, ScheduleData } from "../types";
 
 export interface PostTextState {
   /** Текст, который видит пользователь (сгенерированный или его ручная правка). */
@@ -23,10 +23,14 @@ export interface PostTextState {
   regenerate: () => void;
 }
 
-export function usePostText(data: ScheduleData, settings: PostTextSettings): PostTextState {
+export function usePostText(
+  data: ScheduleData,
+  settings: PostTextSettings,
+  mode: PostMode = "schedule",
+): PostTextState {
   const { text: generated, signature, info } = useMemo(
-    () => buildPostText(data, settings),
-    [data, settings],
+    () => buildPostText(data, settings, mode),
+    [data, settings, mode],
   );
 
   // Ручная правка переживает перезагрузку, только если исходные данные не изменились.

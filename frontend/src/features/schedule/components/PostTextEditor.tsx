@@ -1,11 +1,12 @@
 import { useState } from "react";
 
 import Field from "../../../components/Field";
+import { POST_MODES } from "../constants";
 import { pluralRu } from "../format";
 import { usePostText } from "../hooks/usePostText";
 import { copyToClipboard } from "../postText/clipboard";
 import type { PostTextSettings } from "../postText/settings";
-import type { ScheduleData } from "../types";
+import type { PostMode, ScheduleData } from "../types";
 import PostTextPreview from "./PostTextPreview";
 
 /** Лимит подписи к фотографии в Telegram. */
@@ -14,6 +15,7 @@ const CAPTION_LIMIT = 1024;
 interface PostTextEditorProps {
   data: ScheduleData;
   settings: PostTextSettings;
+  mode: PostMode;
   onSettingsChange: (patch: Partial<PostTextSettings>) => void;
 }
 
@@ -43,9 +45,10 @@ function Switch({ label, hint, checked, onChange }: SwitchProps) {
 export default function PostTextEditor({
   data,
   settings,
+  mode,
   onSettingsChange,
 }: PostTextEditorProps) {
-  const { text, info, edited, outdated, setText, regenerate } = usePostText(data, settings);
+  const { text, info, edited, outdated, setText, regenerate } = usePostText(data, settings, mode);
   const [status, setStatus] = useState<"idle" | "copied" | "error">("idle");
   const [view, setView] = useState<"edit" | "preview">("edit");
   // Если ссылка ещё не задана — сразу показываем настройки, чтобы её было видно.
@@ -78,6 +81,9 @@ export default function PostTextEditor({
           {info.dateLabel}
         </span>
         <span className="fact">🥇 Первый матч: {info.firstMatch ?? "не задан"}</span>
+        {mode !== "schedule" ? (
+          <span className="fact">🎯 Режим: {POST_MODES[mode].label}</span>
+        ) : null}
         {info.streamFromChannel ? (
           <span className="fact">📺 Ссылка взята из поля «Канал внизу картинки»</span>
         ) : null}

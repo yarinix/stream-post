@@ -1,5 +1,6 @@
 import { CANVAS_PRESETS, MATCH_FORMATS, MAX_MATCHES, THEMES } from "./constants";
 import { createDefaultSchedule, newMatchId } from "./defaults";
+import { clampScore } from "./score";
 import type { CanvasPresetId, Match, MatchFormat, ScheduleData, ThemeId } from "./types";
 
 const STORAGE_KEY = "stream-post:schedule-draft:v1";
@@ -26,6 +27,10 @@ function sanitizeMatch(input: unknown): Match | null {
     format,
     logoA: asLogoId(raw.logoA),
     logoB: asLogoId(raw.logoB),
+    predictA: clampScore(raw.predictA),
+    predictB: clampScore(raw.predictB),
+    resultA: clampScore(raw.resultA),
+    resultB: clampScore(raw.resultB),
   };
 }
 

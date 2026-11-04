@@ -1,6 +1,82 @@
-import type { CanvasPresetId, MatchFormat, Theme, ThemeId } from "./types";
+import type { CanvasPresetId, MatchFormat, PostMode, Theme, ThemeId } from "./types";
 
 export const MAX_MATCHES = 8;
+
+/** Максимальный счёт в одной колонке: BO7 предполагает не больше 4 побед, 9 — с запасом. */
+export const MAX_SCORE = 9;
+
+export interface PostModeInfo {
+  id: PostMode;
+  /** Название в переключателе и на главной. */
+  label: string;
+  /** Короткая подпись для нижней панели на узких экранах. */
+  short: string;
+  eyebrow: string;
+  title: string;
+  subtitle: string;
+  /** Надпись над заголовком на картинке. */
+  headerLabel: string;
+  /** Заголовок секции со списком матчей в тексте поста. */
+  sectionTitle: string;
+  /** Подпись к полям счёта в редакторе. */
+  scoreLabel: string;
+  /** Подсказка под полями счёта. */
+  scoreHint: string;
+  /** Суффикс имени PNG-файла. */
+  fileSuffix: string;
+}
+
+/** Общие данные матчей переиспользуются, меняется только смысл центральной колонки. */
+export const POST_MODES: Record<PostMode, PostModeInfo> = {
+  schedule: {
+    id: "schedule",
+    label: "Расписание",
+    short: "Расписание",
+    eyebrow: "MLBB · КАРТИНКА ДЛЯ TELEGRAM",
+    title: "Расписание матчей",
+    subtitle:
+      "Меняйте данные пальцем — картинка и текст поста обновляются сами. Черновик, логотипы и ссылка на стрим сохраняются на устройстве.",
+    headerLabel: "РАСПИСАНИЕ МАТЧЕЙ",
+    sectionTitle: "РАСПИСАНИЕ МАТЧЕЙ",
+    scoreLabel: "",
+    scoreHint: "",
+    fileSuffix: "",
+  },
+  predict: {
+    id: "predict",
+    label: "Предикты",
+    short: "Предикты",
+    eyebrow: "MLBB · ПРОГНОЗ СТРИМЕРА",
+    title: "Предикты на матчи",
+    subtitle:
+      "Выставьте предполагаемый счёт каждого матча — получится картинка в том же стиле, что и расписание. Прогнозы сохраняются отдельно от финальных результатов.",
+    headerLabel: "ПРЕДИКТЫ СТРИМЕРА",
+    sectionTitle: "ПРОГНОЗЫ НА МАТЧИ",
+    scoreLabel: "Прогноз счёта",
+    scoreHint: "Счёт, который ждёт стример. Хранится отдельно от итогов дня.",
+    fileSuffix: "predict",
+  },
+  results: {
+    id: "results",
+    label: "Итоги дня",
+    short: "Итоги",
+    eyebrow: "MLBB · ФИНАЛЬНЫЕ РЕЗУЛЬТАТЫ",
+    title: "Итоги дня",
+    subtitle:
+      "Внесите финальный счёт матчей — картинка покажет результаты и выделит победителя. Прогнозы при этом остаются нетронутыми.",
+    headerLabel: "ИТОГИ ДНЯ",
+    sectionTitle: "РЕЗУЛЬТАТЫ МАТЧЕЙ",
+    scoreLabel: "Финальный счёт",
+    scoreHint: "Победитель подсвечивается на картинке. Незаполненные матчи остаются без счёта.",
+    fileSuffix: "results",
+  },
+};
+
+export const POST_MODE_IDS = Object.keys(POST_MODES) as PostMode[];
+
+export function isPostMode(value: string | null | undefined): value is PostMode {
+  return value === "schedule" || value === "predict" || value === "results";
+}
 
 export const MATCH_FORMATS: MatchFormat[] = ["BO1", "BO2", "BO3", "BO5", "BO7"];
 
