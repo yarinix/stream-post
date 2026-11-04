@@ -36,8 +36,14 @@ export function renderSchedule(data: ScheduleData, logos: RenderLogo[] = []): HT
     timezone: data.timezone,
   });
 
-  const top = headerBottom + (compact ? 28 : 44);
   const bottom = height - footerHeight(data.channel) - 24;
+  // Отступ от шапки до блока матчей масштабируется под доступную высоту:
+  // вместе с симметричным центрированием в drawMatches это убирает «дыру» между заголовком и карточками.
+  const headerGap = Math.max(
+    compact ? 18 : 24,
+    Math.min(compact ? 32 : 44, (bottom - headerBottom) * 0.045),
+  );
+  const top = headerBottom + headerGap;
   drawMatches(
     ctx,
     data.matches,
