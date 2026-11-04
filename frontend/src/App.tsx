@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 
 import HomePage from "./pages/HomePage";
-import SchedulePage from "./pages/SchedulePage";
+import SchedulePage, { type ScheduleTab } from "./pages/SchedulePage";
 import { useHashRoute } from "./router/useHashRoute";
 
 export default function App() {
@@ -11,6 +11,14 @@ export default function App() {
     window.scrollTo(0, 0);
   }, [route]);
 
-  if (route === "/schedule") return <SchedulePage />;
+  const [path, query] = route.split("?");
+
+  if (path === "/schedule") {
+    const requested = new URLSearchParams(query ?? "").get("tab");
+    const initialTab: ScheduleTab =
+      requested === "logos" || requested === "preview" ? requested : "edit";
+    return <SchedulePage initialTab={initialTab} />;
+  }
+
   return <HomePage />;
 }

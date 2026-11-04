@@ -1,22 +1,34 @@
 .schedule-page {
-  max-width: 1120px;
+  max-width: 1240px;
   min-height: 100vh;
   margin: 0 auto;
-  padding: 16px 16px 48px;
+  padding: 12px 16px 48px;
 }
 
+/* Шапка */
 .topbar {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  margin-bottom: 12px;
+  min-height: 48px;
+  margin-bottom: 8px;
+}
+
+.topbar__right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .back-link {
-  padding: 10px 0;
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 0 4px;
   color: var(--muted);
   font-size: 15px;
+  font-weight: 600;
   text-decoration: none;
 }
 
@@ -24,48 +36,73 @@
   color: var(--text);
 }
 
+.save-badge {
+  color: var(--ok);
+  font-size: 13px;
+  font-weight: 600;
+  opacity: 0;
+  transition: opacity 0.2s;
+  white-space: nowrap;
+}
+
+.save-badge--visible {
+  opacity: 1;
+}
+
+.schedule-head {
+  margin-bottom: 20px;
+}
+
+.eyebrow {
+  display: inline-block;
+  margin-bottom: 8px;
+  color: var(--accent);
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+}
+
 .schedule-page__title {
   margin: 0 0 6px;
-  font-size: clamp(26px, 6vw, 34px);
+  font-size: clamp(26px, 6vw, 36px);
+  line-height: 1.15;
 }
 
 .schedule-page__subtitle {
-  margin: 0 0 20px;
+  margin: 0;
+  max-width: 640px;
   color: var(--muted);
   font-size: 15px;
 }
 
-/* Переключатель «Редактор / Картинка» — только на телефоне */
-.tabs {
-  display: none;
-  gap: 4px;
+.banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
   margin-bottom: 16px;
-  padding: 4px;
-  background: var(--surface);
-  border: 1px solid var(--border);
+  padding: 12px 14px;
   border-radius: 12px;
+  font-size: 14px;
 }
 
-.tabs__item {
-  flex: 1;
-  min-height: 44px;
+.banner--error {
+  background: rgba(255, 107, 107, 0.12);
+  color: var(--error);
+}
+
+.banner__close {
   border: 0;
-  border-radius: 9px;
   background: transparent;
-  color: var(--muted);
-  font: inherit;
-  font-weight: 700;
+  color: inherit;
+  font-size: 16px;
   cursor: pointer;
 }
 
-.tabs__item--active {
-  background: var(--accent);
-  color: #0b0d14;
-}
-
+/* Сетка: редактор слева, предпросмотр справа */
 .schedule-layout {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 440px);
+  grid-template-columns: minmax(0, 1fr) minmax(0, 420px);
   gap: 20px;
   align-items: start;
 }
@@ -81,12 +118,36 @@
   gap: 16px;
 }
 
+.col-edit__section {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-width: 0;
+}
+
 .col-preview {
   position: sticky;
   top: 16px;
   display: flex;
   flex-direction: column;
   gap: 14px;
+}
+
+.preview-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.preview-head__title {
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.preview-head__meta {
+  color: var(--muted);
+  font-size: 13px;
 }
 
 /* Панели */
@@ -102,6 +163,7 @@
   display: flex;
   align-items: baseline;
   justify-content: space-between;
+  gap: 8px;
 }
 
 .panel__title {
@@ -109,15 +171,82 @@
   font-size: 17px;
 }
 
+.panel__subtitle {
+  margin: 22px 0 12px;
+  font-size: 14px;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
 .panel__counter {
+  color: var(--muted);
+  font-size: 14px;
+  white-space: nowrap;
+}
+
+.panel__empty {
+  margin: 0;
   color: var(--muted);
   font-size: 14px;
 }
 
-.panel__empty {
-  margin: 0 0 14px;
+.panel__hint {
+  margin: -4px 0 16px;
   color: var(--muted);
-  font-size: 14px;
+  font-size: 13px;
+}
+
+.panel__head + .panel__hint {
+  margin-top: -4px;
+}
+
+/* Сворачиваемый блок «Основное» */
+.panel--accordion {
+  padding: 0;
+  overflow: hidden;
+}
+
+.panel__summary {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 60px;
+  padding: 16px 18px;
+  cursor: pointer;
+  list-style: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.panel__summary::-webkit-details-marker {
+  display: none;
+}
+
+.panel__summary .panel__title {
+  margin: 0;
+}
+
+.panel__summary-hint {
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.panel__chevron {
+  margin-left: auto;
+  color: var(--accent);
+  font-size: 20px;
+  line-height: 1;
+  transition: transform 0.2s;
+}
+
+.panel--accordion:not([open]) .panel__chevron {
+  transform: rotate(-90deg);
+}
+
+.panel__body {
+  padding: 0 18px 18px;
+  border-top: 1px solid var(--border);
+  padding-top: 16px;
 }
 
 /* Поля */
@@ -126,6 +255,7 @@
   flex-direction: column;
   gap: 6px;
   margin-bottom: 14px;
+  min-width: 0;
 }
 
 .field:last-child {
@@ -165,6 +295,13 @@
   color: var(--text);
   font: inherit;
   font-size: 16px; /* 16px — чтобы iPhone не приближал страницу при вводе */
+  touch-action: manipulation;
+}
+
+.input--sm {
+  min-height: 44px;
+  padding: 0 10px;
+  font-size: 15px;
 }
 
 input[type="date"].input,
@@ -184,6 +321,15 @@ select.input {
   background-repeat: no-repeat;
 }
 
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
 /* Размер картинки и цвет */
 .chips {
   display: grid;
@@ -196,7 +342,8 @@ select.input {
   flex-direction: column;
   gap: 2px;
   align-items: center;
-  min-height: 52px;
+  justify-content: center;
+  min-height: 56px;
   padding: 8px 6px;
   background: #0e1220;
   border: 1px solid var(--border);
@@ -225,8 +372,8 @@ select.input {
 }
 
 .swatch {
-  width: 44px;
-  height: 44px;
+  width: 48px;
+  height: 48px;
   border: 3px solid transparent;
   border-radius: 50%;
   cursor: pointer;
@@ -248,7 +395,7 @@ select.input {
 }
 
 .match {
-  padding: 12px;
+  padding: 14px 12px;
   background: #0e1220;
   border: 1px solid var(--border);
   border-radius: 12px;
@@ -258,7 +405,7 @@ select.input {
   display: flex;
   align-items: center;
   gap: 8px;
-  margin-bottom: 8px;
+  margin-bottom: 10px;
 }
 
 .match__when {
@@ -272,8 +419,8 @@ select.input {
   display: grid;
   flex: none;
   place-items: center;
-  width: 28px;
-  height: 28px;
+  width: 30px;
+  height: 30px;
   background: rgba(124, 92, 255, 0.2);
   border-radius: 50%;
   color: var(--accent);
@@ -281,10 +428,16 @@ select.input {
   font-weight: 700;
 }
 
+.match__label {
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 600;
+}
+
 .match__actions {
   display: flex;
   flex: none;
-  gap: 4px;
+  gap: 6px;
   margin-left: auto;
 }
 
@@ -301,15 +454,63 @@ select.input {
   font-weight: 700;
 }
 
+.match__logos {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.logo-pick {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+
+.logo-pick__label {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.logo-pick__row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.logo-pick__thumb {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  color: var(--muted);
+  font-size: 16px;
+  overflow: hidden;
+}
+
+.logo-pick__thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
 .icon-btn {
-  width: 40px;
-  height: 40px;
+  width: 44px;
+  height: 44px;
   border: 1px solid var(--border);
   border-radius: 10px;
   background: transparent;
   color: var(--text);
   font-size: 16px;
   cursor: pointer;
+  touch-action: manipulation;
 }
 
 .icon-btn:disabled {
@@ -319,6 +520,130 @@ select.input {
 
 .icon-btn--danger {
   color: var(--error);
+}
+
+/* Форма загрузки логотипов */
+.logo-form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.logo-picker {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  min-height: 96px;
+  padding: 12px;
+  background: #0e1220;
+  border: 1px dashed var(--border);
+  border-radius: 12px;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.logo-picker:focus-within {
+  border-color: var(--accent);
+}
+
+.logo-picker__frame {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 72px;
+  height: 72px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
+  color: var(--accent);
+  font-size: 30px;
+  overflow: hidden;
+}
+
+.logo-picker__frame img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.logo-picker__text {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+  font-size: 14px;
+}
+
+.logo-picker__text strong {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.logo-picker__text small {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.logo-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 12px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.logo-card {
+  padding: 12px;
+  background: #0e1220;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+}
+
+.logo-card__top {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.logo-card__img {
+  flex: none;
+  width: 64px;
+  height: 64px;
+  object-fit: contain;
+  background: rgba(255, 255, 255, 0.06);
+  border-radius: 10px;
+}
+
+.logo-card__meta {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+
+.logo-card__usage {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.logo-card__actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.inline-error {
+  margin: 10px 0 0;
+  color: var(--error);
+  font-size: 13px;
+}
+
+.inline-ok {
+  margin: 10px 0 0;
+  color: var(--ok);
+  font-size: 13px;
 }
 
 /* Предпросмотр */
@@ -383,10 +708,30 @@ select.input {
   font-size: 12px;
 }
 
-/* Телефон и узкие планшеты: одна колонка, переключатель вкладок */
+/* Нижняя панель навигации — как в мобильном приложении */
+.bottom-nav {
+  display: none;
+}
+
+@keyframes section-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* Телефон и узкие планшеты */
 @media (max-width: 900px) {
-  .tabs {
-    display: flex;
+  .schedule-page {
+    padding: 8px 14px calc(96px + env(safe-area-inset-bottom, 0px));
+  }
+
+  .schedule-head {
+    margin-bottom: 16px;
   }
 
   .schedule-layout {
@@ -397,8 +742,107 @@ select.input {
     position: static;
   }
 
+  .schedule-layout[data-tab="edit"] [data-section="logos"],
   .schedule-layout[data-tab="edit"] .col-preview,
+  .schedule-layout[data-tab="logos"] [data-section="main"],
+  .schedule-layout[data-tab="logos"] .col-preview,
   .schedule-layout[data-tab="preview"] .col-edit {
+    display: none;
+  }
+
+  .col-edit__section:not([hidden]),
+  .col-preview {
+    animation: section-in 0.18s ease-out;
+  }
+
+  .field-row {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .bottom-nav {
+    position: fixed;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    z-index: 20;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 4px;
+    padding: 8px 10px calc(8px + env(safe-area-inset-bottom, 0px));
+    background: rgba(15, 18, 30, 0.94);
+    border-top: 1px solid var(--border);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+  }
+
+  .bottom-nav__item {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 2px;
+    min-height: 56px;
+    border: 0;
+    border-radius: 12px;
+    background: transparent;
+    color: var(--muted);
+    font: inherit;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .bottom-nav__item--active {
+    background: rgba(124, 92, 255, 0.16);
+    color: var(--text);
+  }
+
+  .bottom-nav__icon {
+    font-size: 20px;
+    line-height: 1.1;
+  }
+
+  .bottom-nav__badge {
+    position: absolute;
+    top: 4px;
+    right: calc(50% - 26px);
+    min-width: 18px;
+    padding: 1px 5px;
+    background: var(--accent);
+    border-radius: 999px;
+    color: #0b0d14;
+    font-size: 11px;
+    font-weight: 800;
+  }
+}
+
+@media (max-width: 420px) {
+  .chips {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .chip {
+    flex-direction: row;
+    gap: 8px;
+    min-height: 48px;
+  }
+
+  .match__teams {
+    gap: 6px;
+  }
+
+  .match__logos {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .logo-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .save-badge {
     display: none;
   }
 }

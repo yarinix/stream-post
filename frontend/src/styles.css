@@ -215,3 +215,46 @@ body {
   color: var(--accent);
   font-size: 22px;
 }
+
+.tool + .tool {
+  margin-top: 10px;
+}
+
+.card__text {
+  margin: 0;
+  color: var(--muted);
+  font-size: 14px;
+}
+
+/* Утилиты */
+.btn--sm {
+  min-height: 44px;
+  padding: 0 14px;
+  font-size: 14px;
+}
+
+.btn--danger {
+  color: var(--error);
+}
+
+button,
+input,
+select,
+textarea {
+  touch-action: manipulation;
+}
+
+button {
+  -webkit-tap-highlight-color: transparent;
+}
+
+@media (max-width: 600px) {
+  .page {
+    padding: 28px 14px 32px;
+    gap: 18px;
+  }
+
+  .card {
+    padding: 16px;
+  }
+}
