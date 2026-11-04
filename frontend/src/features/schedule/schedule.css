@@ -49,6 +49,58 @@
   opacity: 1;
 }
 
+/* Переключатель типа поста: расписание / предикты / итоги */
+.mode-switch {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 6px;
+  max-width: 560px;
+  margin: 0 0 18px;
+  padding: 5px;
+  background: #0e1220;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+}
+
+.mode-switch__item {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 48px;
+  padding: 6px 10px;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  color: var(--muted);
+  font: inherit;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+}
+
+.mode-switch__item:hover {
+  color: var(--text);
+}
+
+.mode-switch__item--active {
+  background: rgba(124, 92, 255, 0.16);
+  border-color: var(--accent);
+  color: var(--text);
+}
+
+.mode-switch__icon {
+  font-size: 18px;
+  line-height: 1;
+}
+
+.mode-switch__label {
+  white-space: nowrap;
+}
+
 .schedule-head {
   margin-bottom: 20px;
 }
@@ -452,6 +504,58 @@ select.input {
   color: var(--muted);
   font-size: 12px;
   font-weight: 700;
+}
+
+/* Поля счёта (предикты / итоги дня) */
+.match__score {
+  margin-top: 10px;
+  padding: 10px;
+  background: rgba(124, 92, 255, 0.06);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+}
+
+.match__score-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 6px;
+  margin-bottom: 8px;
+}
+
+.match__score-label {
+  color: var(--accent);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.match__score-teams {
+  color: var(--muted);
+  font-size: 12px;
+  overflow-wrap: anywhere;
+}
+
+.match__score-fields {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  gap: 10px;
+  align-items: center;
+}
+
+.input--score {
+  min-height: 48px;
+  padding: 0 8px;
+  font-size: 20px;
+  font-weight: 800;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+
+.match__score-sep {
+  color: var(--muted);
+  font-size: 20px;
+  font-weight: 800;
 }
 
 .match__logos {
@@ -978,6 +1082,11 @@ select.input {
     margin-bottom: 16px;
   }
 
+  .mode-switch {
+    max-width: none;
+    margin-bottom: 14px;
+  }
+
   .schedule-layout {
     grid-template-columns: minmax(0, 1fr);
   }
@@ -1069,6 +1178,22 @@ select.input {
 }
 
 @media (max-width: 420px) {
+  .mode-switch {
+    gap: 4px;
+    padding: 4px;
+  }
+
+  .mode-switch__item {
+    gap: 5px;
+    min-height: 46px;
+    padding: 6px 4px;
+    font-size: 12px;
+  }
+
+  .mode-switch__icon {
+    font-size: 15px;
+  }
+
   .chips {
     grid-template-columns: minmax(0, 1fr);
   }

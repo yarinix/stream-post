@@ -1,6 +1,7 @@
 import { findTeamLogo } from "../logos/types";
 import type { RenderLogo } from "../logos/types";
-import type { Match, Theme } from "../types";
+import { scoreCenterText, winnerSide } from "../score";
+import type { Match, PostMode, Theme } from "../types";
 import {
   fitFontSize,
   hexToRgba,
@@ -14,6 +15,8 @@ import {
 const MAX_ROW_HEIGHT = 210;
 const MIN_ROW_HEIGHT = 40;
 const MAX_GAP = 44;
+/** Зазор между плашкой со счётом и названиями команд. */
+const SCORE_GAP = 20;
 
 function clamp(value: number, min: number, max: number): number {
   return Math.min(Math.max(value, min), max);
@@ -113,8 +116,14 @@ function drawRow(
   h: number,
   theme: Theme,
   logos: RenderLogo[],
+  mode: PostMode,
 ): void {
   const radius = Math.min(22, h * 0.2);
+  const isScoreMode = mode !== "schedule";
+  const centerText = scoreCenterText(match, mode);
+  // В режимах со счётом размер центральной плашки фиксирован и не зависит от кегля названий:
+  // иначе ширина зазора и размер имён зациклились бы друг на друге.
+  const centerFont = Math.min(52, Math.max(22, h * 0.34));
 
   // Карточка
   roundRectPath(ctx, x, y, w, h, radius);
@@ -182,11 +191,20 @@ function drawRow(
 
   // Логотип и названия делят одну ширину, поэтому подбираем их вместе:
   // логотип остаётся крупным, а названия — читаемыми.
+  const measureCenter = (size: number): number => {
+    if (isScoreMode) {
+      setFont(ctx, 900, centerFont);
+      // Отступы по краям плашки плюс зазоры до названий с обеих сторон.
+      return ctx.measureText(centerText).width + 28 + SCORE_GAP * 2;
+    }
+    setFont(ctx, 800, Math.max(size * 0.55, 14));
+    return ctx.measureText("VS").width + 22;
+  };
+
   const measureNames = (size: number): number => {
     setFont(ctx, 800, size);
     const names = ctx.measureText(teamA).width + ctx.measureText(teamB).width;
-    setFont(ctx, 800, Math.max(size * 0.55, 14));
-    return names + ctx.measureText("VS").width + 22;
+    return names + measureCenter(size);
   };
 
   let logoSize = maxLogoSize;
@@ -225,11 +243,16 @@ function drawRow(
   }
 
   const centerX = (textLeft + textRight) / 2;
-  const provisionalVs = Math.max(preferredNameSize * 0.55, 14);
-  setFont(ctx, 800, provisionalVs);
-  const vsHalf = ctx.measureText("VS").width / 2 + 11;
-  const maxSide = Math.max(40, (textRight - textLeft) / 2 - vsHalf);
-  const availableWidth = Math.max(40, textRight - textLeft - vsHalf * 2);
+  let centerHalf: number;
+  if (isScoreMode) {
+    setFont(ctx, 900, centerFont);
+    centerHalf = ctx.measureText(centerText).width / 2 + 14 + SCORE_GAP;
+  } else {
+    setFont(ctx, 800, Math.max(preferredNameSize * 0.55, 14));
+    centerHalf = ctx.measureText("VS").width / 2 + 11;
+  }
+  const maxSide = Math.max(40, (textRight - textLeft) / 2 - centerHalf);
+  const availableWidth = Math.max(40, textRight - textLeft - centerHalf * 2);
 
   const symmetricSize = Math.min(
     fitFontSize(ctx, teamA, 800, maxSide, preferredNameSize, 16),
@@ -237,8 +260,8 @@ function drawRow(
   );
 
   let nameSize = symmetricSize;
-  let teamAEnd = centerX - vsHalf; // правый край названия первой команды
-  let teamBStart = centerX + vsHalf; // левый край названия второй команды
+  let teamAEnd = centerX - centerHalf; // правый край названия первой команды
+  let teamBStart = centerX + centerHalf; // левый край названия второй команды
   let vsX = centerX;
   let textA = teamA;
   let textB = teamB;
@@ -272,27 +295,49 @@ function drawRow(
       widthB = ctx.measureText(textB).width;
     }
 
-    const startX = textLeft + (textRight - textLeft - (widthA + widthB + vsHalf * 2)) / 2;
+    const startX = textLeft + (textRight - textLeft - (widthA + widthB + centerHalf * 2)) / 2;
     teamAEnd = startX + widthA;
-    vsX = teamAEnd + vsHalf;
-    teamBStart = vsX + vsHalf;
+    vsX = teamAEnd + centerHalf;
+    teamBStart = vsX + centerHalf;
   } else {
     setFont(ctx, 800, nameSize);
     textA = truncateToWidth(ctx, teamA, maxSide);
     textB = truncateToWidth(ctx, teamB, maxSide);
   }
 
+  // В «Итогах дня» победитель подсвечивается акцентом, проигравший приглушается.
+  const winner = winnerSide(match, mode);
+  const colorA = winner === "a" ? theme.accent : winner === "b" ? "rgba(255, 255, 255, 0.5)" : "#ffffff";
+  const colorB = winner === "b" ? theme.accent : winner === "a" ? "rgba(255, 255, 255, 0.5)" : "#ffffff";
+
   setFont(ctx, 800, nameSize);
-  ctx.fillStyle = "#ffffff";
   ctx.textAlign = "right";
+  ctx.fillStyle = colorA;
   ctx.fillText(textA, teamAEnd, midY + 1);
   ctx.textAlign = "left";
+  ctx.fillStyle = colorB;
   ctx.fillText(textB, teamBStart, midY + 1);
 
-  setFont(ctx, 800, Math.max(nameSize * 0.55, 14));
-  ctx.textAlign = "center";
-  ctx.fillStyle = "rgba(255, 255, 255, 0.45)";
-  ctx.fillText("VS", vsX, midY + 1);
+  if (isScoreMode) {
+    // Плашка уже, чем зона: по краям остаются зазоры до названий команд.
+    const badgeW = centerHalf * 2 - SCORE_GAP * 2;
+    const badgeH = Math.min(h * 0.62, 68);
+    roundRectPath(ctx, vsX - badgeW / 2, midY - badgeH / 2, badgeW, badgeH, badgeH / 2);
+    ctx.fillStyle = hexToRgba(theme.accent, 0.16);
+    ctx.fill();
+    ctx.strokeStyle = hexToRgba(theme.accent, 0.8);
+    ctx.lineWidth = 2;
+    ctx.stroke();
+    setFont(ctx, 900, centerFont);
+    ctx.textAlign = "center";
+    ctx.fillStyle = theme.accent;
+    ctx.fillText(centerText, vsX, midY + 1);
+  } else {
+    setFont(ctx, 800, Math.max(nameSize * 0.55, 14));
+    ctx.textAlign = "center";
+    ctx.fillStyle = "rgba(255, 255, 255, 0.45)";
+    ctx.fillText("VS", vsX, midY + 1);
+  }
 }
 
 /** Рисует список матчей в заданной области. Размеры строк подстраиваются под количество матчей. */
@@ -302,6 +347,7 @@ export function drawMatches(
   region: Region,
   theme: Theme,
   logos: RenderLogo[] = [],
+  mode: PostMode = "schedule",
 ): void {
   const count = matches.length;
   if (count === 0) {
@@ -312,6 +358,16 @@ export function drawMatches(
   const { rowHeight, gap, startY } = computeMatchesLayout(count, region);
 
   matches.forEach((match, index) => {
-    drawRow(ctx, match, region.x, startY + index * (rowHeight + gap), region.w, rowHeight, theme, logos);
+    drawRow(
+      ctx,
+      match,
+      region.x,
+      startY + index * (rowHeight + gap),
+      region.w,
+      rowHeight,
+      theme,
+      logos,
+      mode,
+    );
   });
 }

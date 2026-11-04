@@ -1,5 +1,7 @@
 import { useEffect } from "react";
 
+import { isPostMode } from "./features/schedule/constants";
+import type { PostMode } from "./features/schedule/types";
 import HomePage from "./pages/HomePage";
 import SchedulePage, { type ScheduleTab } from "./pages/SchedulePage";
 import { useHashRoute } from "./router/useHashRoute";
@@ -14,12 +16,15 @@ export default function App() {
   const [path, query] = route.split("?");
 
   if (path === "/schedule") {
-    const requested = new URLSearchParams(query ?? "").get("tab");
+    const params = new URLSearchParams(query ?? "");
+    const requested = params.get("tab");
     const initialTab: ScheduleTab =
       requested === "logos" || requested === "preview" || requested === "text"
         ? requested
         : "edit";
-    return <SchedulePage initialTab={initialTab} />;
+    const modeParam = params.get("mode");
+    const requestedMode: PostMode = isPostMode(modeParam) ? modeParam : "schedule";
+    return <SchedulePage initialTab={initialTab} requestedMode={requestedMode} />;
   }
 
   return <HomePage />;

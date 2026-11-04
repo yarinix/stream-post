@@ -1,6 +1,8 @@
+import { POST_MODES } from "../constants";
 import { todayIso } from "../defaults";
 import { formatDateRu } from "../format";
-import type { Match, ScheduleData } from "../types";
+import { getScore } from "../score";
+import type { Match, PostMode, ScheduleData } from "../types";
 import type { PostTextSettings } from "./settings";
 
 /** Шаблон подписи к фотографии. Плейсхолдеры заполняются из данных формы. */
@@ -30,13 +32,18 @@ interface TemplateVars {
   streamLink: string;
 }
 
-export function renderPostTemplate(vars: TemplateVars): string {
+export function renderPostTemplate(vars: TemplateVars, mode: PostMode = "schedule"): string {
   // Функции в replace — чтобы символы вроде "$&" в данных не трактовались как шаблон.
-  const text = POST_TEMPLATE.replace("{{TOURNAMENT_NAME}}", () => vars.tournament)
+  let text = POST_TEMPLATE.replace("{{TOURNAMENT_NAME}}", () => vars.tournament)
     .replace("{{DATE}}", () => vars.date)
     .replace("{{MATCH_LIST}}", () => vars.matchList)
     // Поддерживаем оба написания: {{STREAM LINK}} из шаблона и {{STREAM_LINK}} для совместимости.
     .replace(/\{\{STREAM[ _]LINK\}\}/, () => vars.streamLink);
+
+  // В предиктах и итогах меняется только заголовок секции — сам шаблон остаётся прежним.
+  if (mode !== "schedule") {
+    text = text.replace("РАСПИСАНИЕ МАТЧЕЙ", () => POST_MODES[mode].sectionTitle);
+  }
 
   // Пустая стадия не должна оставлять строку «⚔️ » — убираем строку целиком.
   return vars.stage
@@ -65,10 +72,22 @@ export function hasTeams(match: Match): boolean {
   return Boolean(match.teamA.trim() || match.teamB.trim());
 }
 
-export function matchLine(match: Match): string {
+export function matchLine(match: Match, mode: PostMode = "schedule"): string {
   const teamA = match.teamA.trim() || "TBD";
   const teamB = match.teamB.trim() || "TBD";
-  return `${normalizeTime(match.time)} — ${teamA} vs ${teamB} (${match.format})`;
+  const time = normalizeTime(match.time);
+  const score = getScore(match, mode);
+
+  // Итоги: счёт заменяет «vs», если он заполнен.
+  if (mode === "results" && score) {
+    return `${time} — ${teamA} ${score.a}:${score.b} ${teamB} (${match.format})`;
+  }
+  const base = `${time} — ${teamA} vs ${teamB} (${match.format})`;
+  // Предикты: прогноз добавляется в конец строки, сами команды остаются на месте.
+  if (mode === "predict" && score) {
+    return `${base} · прогноз ${score.a}:${score.b}`;
+  }
+  return base;
 }
 
 /** Устойчивая сортировка по времени: матчи с некорректным временем уходят в конец. */
@@ -99,6 +118,7 @@ export interface PostTextInfo {
   dateLabel: string;
   firstMatch: string | null;
   matchCount: number;
+  mode: PostMode;
   streamLink: string;
   /** true — ссылка взята из поля «Канал внизу картинки», потому что в настройках пусто. */
   streamFromChannel: boolean;
@@ -116,8 +136,10 @@ export function postTextSignature(
   data: ScheduleData,
   settings: PostTextSettings,
   dateIso: string,
+  mode: PostMode = "schedule",
 ): string {
   return JSON.stringify({
+    mode,
     tournament: data.tournament.trim(),
     stage: data.stage.trim(),
     date: dateIso,
@@ -130,6 +152,10 @@ export function postTextSignature(
       match.teamA.trim(),
       match.teamB.trim(),
       match.format,
+      match.predictA,
+      match.predictB,
+      match.resultA,
+      match.resultB,
     ]),
   });
 }
@@ -137,6 +163,7 @@ export function postTextSignature(
 export function buildPostText(
   data: ScheduleData,
   settings: PostTextSettings,
+  mode: PostMode = "schedule",
 ): PostTextResult {
   const dateIso = settings.autoDate ? todayIso() : data.date;
   const readableDate = formatDateRu(dateIso) || formatDateRu(todayIso()) || dateIso;
@@ -147,27 +174,33 @@ export function buildPostText(
 
   const filled = data.matches.filter(hasTeams);
   const ordered = settings.sortByTime ? sortMatchesByTime(filled) : filled;
-  const matchList = ordered.length ? ordered.map(matchLine).join("\n") : "—";
+  const matchList = ordered.length
+    ? ordered.map((match) => matchLine(match, mode)).join("\n")
+    : "—";
 
   const streamFromChannel = !settings.streamLink.trim() && Boolean(data.channel.trim());
   const streamLink = settings.streamLink.trim() || data.channel.trim() || "ссылка не указана";
 
   const first = findFirstMatch(data.matches);
-  const text = renderPostTemplate({
-    tournament: data.tournament.trim() || "Турнир",
-    stage: data.stage.trim(),
-    date: dateLabel,
-    matchList,
-    streamLink,
-  });
+  const text = renderPostTemplate(
+    {
+      tournament: data.tournament.trim() || "Турнир",
+      stage: data.stage.trim(),
+      date: dateLabel,
+      matchList,
+      streamLink,
+    },
+    mode,
+  );
 
   return {
     text,
-    signature: postTextSignature(data, settings, dateIso),
+    signature: postTextSignature(data, settings, dateIso, mode),
     info: {
       dateLabel,
-      firstMatch: first ? matchLine(first) : null,
+      firstMatch: first ? matchLine(first, mode) : null,
       matchCount: ordered.length,
+      mode,
       streamLink,
       streamFromChannel,
       autoDateUsed: settings.autoDate,

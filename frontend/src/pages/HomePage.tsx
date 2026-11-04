@@ -7,8 +7,8 @@ export default function HomePage() {
         <span className="hero__badge">MLBB · ФОТОПОСТЫ</span>
         <h1 className="hero__title">Stream Post</h1>
         <p className="hero__text">
-          Готовьте картинку и текст поста с расписанием матчей MLBB прямо с телефона и публикуйте их
-          в Telegram.
+          Готовьте картинку и текст поста MLBB прямо с телефона: расписание матчей, прогнозы стримера
+          и итоги дня — из одних и тех же данных.
         </p>
       </header>
 
@@ -17,6 +17,20 @@ export default function HomePage() {
         <a className="tool" href="#/schedule">
           <span className="tool__name">Расписание матчей</span>
           <span className="tool__text">Картинка с матчами, временем и форматом BO</span>
+          <span className="tool__arrow" aria-hidden="true">
+            →
+          </span>
+        </a>
+        <a className="tool" href="#/schedule?mode=predict">
+          <span className="tool__name">Предикты</span>
+          <span className="tool__text">Выставьте предполагаемый счёт — получится картинка в том же стиле</span>
+          <span className="tool__arrow" aria-hidden="true">
+            →
+          </span>
+        </a>
+        <a className="tool" href="#/schedule?mode=results">
+          <span className="tool__name">Итоги дня</span>
+          <span className="tool__text">Финальные результаты матчей с подсветкой победителя</span>
           <span className="tool__arrow" aria-hidden="true">
             →
           </span>
@@ -40,8 +54,8 @@ export default function HomePage() {
       <section className="card">
         <h2 className="card__title">Что дальше</h2>
         <p className="card__text">
-          Проект готовит и фотографию, и подпись к ней. Подключение к Telegram и отправка постов
-          напрямую появятся в следующих версиях.
+          Проект готовит и фотографию, и подпись к ней для трёх типов постов. Подключение к Telegram
+          и отправка постов напрямую появятся в следующих версиях.
         </p>
       </section>
 
@@ -50,7 +64,7 @@ export default function HomePage() {
         <BackendStatus />
       </section>
 
-      <footer className="footer">v0.4.1</footer>
+      <footer className="footer">v0.5.0</footer>
     </main>
   );
 }

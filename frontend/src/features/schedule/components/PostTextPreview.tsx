@@ -19,7 +19,14 @@ function kindOf(line: string): LineKind {
   if (!t) return "blank";
   if (/^[━─═]{6,}$/.test(t)) return "rule";
   if (t.startsWith("🏆")) return "title";
-  if (t === "РАСПИСАНИЕ МАТЧЕЙ" || t.startsWith("📺")) return "section";
+  if (
+    t === "РАСПИСАНИЕ МАТЧЕЙ" ||
+    t === "ПРОГНОЗЫ НА МАТЧИ" ||
+    t === "РЕЗУЛЬТАТЫ МАТЧЕЙ" ||
+    t.startsWith("📺")
+  ) {
+    return "section";
+  }
   if (t.startsWith("⚔") || t.startsWith("📅")) return "meta";
   if (/^\d{1,2}:\d{2}/.test(t)) return "match";
   if (/^https?:\/\//i.test(t)) return "link";

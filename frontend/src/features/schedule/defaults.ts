@@ -16,6 +16,10 @@ export function createMatch(partial: Partial<Omit<Match, "id">> = {}): Match {
     format: "BO3",
     logoA: null,
     logoB: null,
+    predictA: null,
+    predictB: null,
+    resultA: null,
+    resultB: null,
     ...partial,
   };
 }

@@ -1,7 +1,7 @@
-import { CANVAS_PRESETS, THEMES } from "../constants";
+import { CANVAS_PRESETS, POST_MODES, THEMES } from "../constants";
 import { formatDateRu } from "../format";
 import type { RenderLogo } from "../logos/types";
-import type { ScheduleData } from "../types";
+import type { PostMode, ScheduleData } from "../types";
 import { drawBackground } from "./drawBackground";
 import { drawFooter, footerHeight } from "./drawFooter";
 import { drawHeader } from "./drawHeader";
@@ -9,8 +9,15 @@ import { drawMatches } from "./drawMatches";
 
 const PADDING = 64;
 
-/** Рисует картинку с расписанием и возвращает canvas. Шрифты и логотипы должны быть загружены заранее. */
-export function renderSchedule(data: ScheduleData, logos: RenderLogo[] = []): HTMLCanvasElement {
+/**
+ * Рисует картинку и возвращает canvas. Шрифты и логотипы должны быть загружены заранее.
+ * mode меняет надпись в шапке и содержимое центральной колонки матчей (VS / прогноз / результат).
+ */
+export function renderSchedule(
+  data: ScheduleData,
+  logos: RenderLogo[] = [],
+  mode: PostMode = "schedule",
+): HTMLCanvasElement {
   const preset = CANVAS_PRESETS[data.preset];
   const theme = THEMES[data.theme];
   const { width, height } = preset;
@@ -34,6 +41,7 @@ export function renderSchedule(data: ScheduleData, logos: RenderLogo[] = []): HT
     stage: data.stage,
     dateText: formatDateRu(data.date),
     timezone: data.timezone,
+    label: POST_MODES[mode].headerLabel,
   });
 
   const bottom = height - footerHeight(data.channel) - 24;
@@ -50,6 +58,7 @@ export function renderSchedule(data: ScheduleData, logos: RenderLogo[] = []): HT
     { x: PADDING, y: top, w: width - PADDING * 2, h: Math.max(0, bottom - top) },
     theme,
     logos,
+    mode,
   );
 
   drawFooter(ctx, { width, height, padding: PADDING, theme, channel: data.channel });

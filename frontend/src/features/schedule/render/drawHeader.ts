@@ -18,6 +18,8 @@ export interface HeaderOptions {
   stage: string;
   dateText: string;
   timezone: string;
+  /** Надпись над заголовком: «РАСПИСАНИЕ МАТЧЕЙ», «ПРЕДИКТЫ СТРИМЕРА», «ИТОГИ ДНЯ». */
+  label?: string;
 }
 
 interface TitleLayout {
@@ -58,7 +60,9 @@ export function drawHeader(ctx: Ctx, options: HeaderOptions): number {
   // Надпись над заголовком
   setFont(ctx, 800, 26);
   ctx.fillStyle = theme.accent;
-  withLetterSpacing(ctx, 8, () => ctx.fillText("РАСПИСАНИЕ МАТЧЕЙ", padding, y));
+  withLetterSpacing(ctx, 8, () =>
+    ctx.fillText(options.label ?? "РАСПИСАНИЕ МАТЧЕЙ", padding, y),
+  );
   y += 26 + (compact ? 22 : 34);
 
   // Название турнира
