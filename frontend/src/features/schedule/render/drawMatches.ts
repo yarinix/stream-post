@@ -11,11 +11,61 @@ import {
   type Region,
 } from "./helpers";
 
-const MAX_ROW_HEIGHT = 170;
+const MAX_ROW_HEIGHT = 210;
 const MIN_ROW_HEIGHT = 40;
+const MAX_GAP = 44;
 
 function clamp(value: number, min: number, max: number): number {
   return Math.min(Math.max(value, min), max);
+}
+
+/** Базовый зазор между карточками: чем больше матчей, тем плотнее блок. */
+function baseGap(count: number): number {
+  if (count <= 2) return 24;
+  if (count === 3) return 22;
+  if (count === 4) return 18;
+  if (count === 5) return 16;
+  return 12;
+}
+
+export interface MatchesLayout {
+  count: number;
+  rowHeight: number;
+  gap: number;
+  startY: number;
+  totalHeight: number;
+}
+
+/**
+ * Раскладка блока матчей. Высота карточек и зазоры автоматически подстраиваются
+ * под количество матчей (в первую очередь 3–5) и доступную высоту области:
+ * при 3 матчах карточки крупнее и зазоры шире, при 5 — плотнее, но без наложений.
+ */
+export function computeMatchesLayout(count: number, region: Region): MatchesLayout {
+  if (count === 0) {
+    return { count: 0, rowHeight: 0, gap: 0, startY: region.y, totalHeight: 0 };
+  }
+
+  const available = Math.max(0, region.h);
+  // Верхняя граница высоты карточки зависит от доступного места, а не фиксирована.
+  const maxRow = Math.min(MAX_ROW_HEIGHT, Math.max(MIN_ROW_HEIGHT, available * 0.27));
+  const minRow = Math.min(MIN_ROW_HEIGHT, available / count);
+  const gap0 = baseGap(count);
+  const rowHeight = clamp((available - gap0 * (count - 1)) / count, minRow, maxRow);
+
+  let gap = gap0;
+  let totalHeight = rowHeight * count + gap * (count - 1);
+
+  // Если карточки уперлись в максимум, избыток места уходит в зазоры —
+  // так блок не «отлипает» от шапки и не оставляет пустую дыру снизу.
+  if (count > 1 && available > totalHeight) {
+    gap = Math.min(MAX_GAP, gap + (available - totalHeight) / (count - 1));
+    totalHeight = rowHeight * count + gap * (count - 1);
+  }
+
+  // Симметричные поля сверху и снизу области — пространство между шапкой и матчами сбалансировано.
+  const startY = region.y + Math.max(0, (available - totalHeight) / 2);
+  return { count, rowHeight, gap, startY, totalHeight };
 }
 
 function drawPlaceholder(ctx: Ctx, region: Region): void {
@@ -86,7 +136,7 @@ function drawRow(
   ctx.textBaseline = "middle";
 
   // Время
-  const timeColumn = Math.min(220, w * 0.2);
+  const timeColumn = Math.min(200, w * 0.18);
   const timeText = match.time.trim() || "--:--";
   const timeSize = fitFontSize(ctx, timeText, 900, timeColumn - 36, Math.min(66, h * 0.46), 18);
   setFont(ctx, 900, timeSize);
@@ -115,13 +165,46 @@ function drawRow(
   ctx.fillText(match.format, badgeX + badgeWidth / 2, midY + 1);
 
   // Область команд
-  const contentLeft = x + timeColumn + 4 + 30;
-  const contentRight = badgeX - 24;
+  const contentLeft = x + timeColumn + 4 + 22;
+  const contentRight = badgeX - 14;
   const logoA = findTeamLogo(logos, match.teamA, match.logoA);
   const logoB = findTeamLogo(logos, match.teamB, match.logoB);
   const areaWidth = Math.max(0, contentRight - contentLeft);
-  const logoGap = Math.max(10, h * 0.08);
-  let logoSize = Math.min(h * 0.42, 72, areaWidth * 0.16);
+  const teamA = (match.teamA.trim() || "TBD").toUpperCase();
+  const teamB = (match.teamB.trim() || "TBD").toUpperCase();
+
+  const logoSlots = (logoA ? 1 : 0) + (logoB ? 1 : 0);
+  const logoGap = Math.max(8, h * 0.045);
+  const maxLogoSize = Math.min(h * 0.54, 92, areaWidth * 0.2);
+  const minLogoSize = Math.max(18, Math.min(maxLogoSize * 0.55, h * 0.3));
+  const maxNameSize = Math.min(46, h * 0.34);
+  const minNameSize = Math.max(22, Math.min(26, h * 0.19));
+
+  // Логотип и названия делят одну ширину, поэтому подбираем их вместе:
+  // логотип остаётся крупным, а названия — читаемыми.
+  const measureNames = (size: number): number => {
+    setFont(ctx, 800, size);
+    const names = ctx.measureText(teamA).width + ctx.measureText(teamB).width;
+    setFont(ctx, 800, Math.max(size * 0.55, 14));
+    return names + ctx.measureText("VS").width + 22;
+  };
+
+  let logoSize = maxLogoSize;
+  let preferredNameSize = maxNameSize;
+  for (;;) {
+    const textWidth = Math.max(0, areaWidth - logoSlots * (logoSize + logoGap));
+    let candidate = maxNameSize;
+    while (candidate > minNameSize && measureNames(candidate) > textWidth) {
+      candidate -= 2;
+    }
+    // Проверяем именно минимальный размер: если названия влезают даже с ним —
+    // логотип можно оставить крупным.
+    const fitsAtMin = measureNames(minNameSize) <= textWidth;
+    preferredNameSize = fitsAtMin ? candidate : minNameSize;
+    if (logoSlots === 0 || fitsAtMin || logoSize <= minLogoSize) break;
+    logoSize = Math.max(minLogoSize, logoSize - 4);
+  }
+
   let textLeft = contentLeft;
   let textRight = contentRight;
 
@@ -133,11 +216,6 @@ function drawRow(
   };
 
   applyLogoSpace();
-  // Названия команд важнее логотипов: если места мало, ужимаем именно логотип.
-  if (textRight - textLeft < 320 && logoSize > 24) {
-    logoSize = Math.max(24, logoSize * 0.7);
-    applyLogoSpace();
-  }
 
   if (logoA && logoSize > 12) {
     drawLogo(ctx, logoA, contentLeft, midY - logoSize / 2, logoSize);
@@ -147,19 +225,15 @@ function drawRow(
   }
 
   const centerX = (textLeft + textRight) / 2;
-  const teamA = (match.teamA.trim() || "TBD").toUpperCase();
-  const teamB = (match.teamB.trim() || "TBD").toUpperCase();
-
-  const maxNameSize = Math.min(46, h * 0.34);
-  const provisionalVs = Math.max(maxNameSize * 0.55, 14);
+  const provisionalVs = Math.max(preferredNameSize * 0.55, 14);
   setFont(ctx, 800, provisionalVs);
-  const vsHalf = ctx.measureText("VS").width / 2 + 16;
+  const vsHalf = ctx.measureText("VS").width / 2 + 11;
   const maxSide = Math.max(40, (textRight - textLeft) / 2 - vsHalf);
   const availableWidth = Math.max(40, textRight - textLeft - vsHalf * 2);
 
   const symmetricSize = Math.min(
-    fitFontSize(ctx, teamA, 800, maxSide, maxNameSize, 16),
-    fitFontSize(ctx, teamB, 800, maxSide, maxNameSize, 16),
+    fitFontSize(ctx, teamA, 800, maxSide, preferredNameSize, 16),
+    fitFontSize(ctx, teamB, 800, maxSide, preferredNameSize, 16),
   );
 
   let nameSize = symmetricSize;
@@ -169,10 +243,10 @@ function drawRow(
   let textA = teamA;
   let textB = teamB;
 
-  if (symmetricSize < Math.min(28, maxNameSize * 0.75)) {
+  if (symmetricSize < preferredNameSize) {
     // Одно из названий длинное: не сжимаем обе команды, а делим место по их длине.
     const minSize = 18;
-    nameSize = Math.min(maxNameSize, symmetricSize * 2);
+    nameSize = Math.min(preferredNameSize, symmetricSize * 2);
     while (nameSize > minSize) {
       setFont(ctx, 800, nameSize);
       if (ctx.measureText(teamA).width + ctx.measureText(teamB).width <= availableWidth) break;
@@ -235,11 +309,7 @@ export function drawMatches(
     return;
   }
 
-  const gap = count > 5 ? 12 : 18;
-  const rowHeight = clamp((region.h - gap * (count - 1)) / count, MIN_ROW_HEIGHT, MAX_ROW_HEIGHT);
-  const totalHeight = rowHeight * count + gap * (count - 1);
-  // Блок чуть выше центра: так он ближе к шапке и не «проваливается» вниз.
-  const startY = region.y + Math.max(0, (region.h - totalHeight) * 0.4);
+  const { rowHeight, gap, startY } = computeMatchesLayout(count, region);
 
   matches.forEach((match, index) => {
     drawRow(ctx, match, region.x, startY + index * (rowHeight + gap), region.w, rowHeight, theme, logos);
