@@ -17,10 +17,17 @@ export const DEFAULT_POST_TEXT_SETTINGS: PostTextSettings = {
   includeTimezone: true,
 };
 
+/**
+ * Версия шаблона: при его изменении сохранённая ручная правка сбрасывается,
+ * иначе пользователь продолжал бы видеть текст по старому шаблону.
+ */
+export const POST_TEMPLATE_VERSION = 2;
+
 /** Ручная правка итогового текста. signature защищает от склеивания со старыми данными. */
 export interface PostTextDraft {
   signature: string;
   text: string;
+  version: number;
 }
 
 const SETTINGS_KEY = "stream-post:post-text-settings:v1";
@@ -73,7 +80,8 @@ export function loadPostTextDraft(): PostTextDraft | null {
   if (!raw || typeof raw !== "object") return null;
   const value = raw as Record<string, unknown>;
   if (typeof value.signature !== "string" || typeof value.text !== "string") return null;
-  return { signature: value.signature, text: value.text.slice(0, 8000) };
+  if (value.version !== POST_TEMPLATE_VERSION) return null;
+  return { signature: value.signature, text: value.text.slice(0, 8000), version: POST_TEMPLATE_VERSION };
 }
 
 export function savePostTextDraft(draft: PostTextDraft | null): void {

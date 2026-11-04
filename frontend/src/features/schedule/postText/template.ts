@@ -5,15 +5,22 @@ import type { PostTextSettings } from "./settings";
 
 /** Шаблон подписи к фотографии. Плейсхолдеры заполняются из данных формы. */
 export const POST_TEMPLATE = `🏆 {{TOURNAMENT_NAME}}
-{{STAGE}} · {{DATE}}
 
-Сегодня нас ждут следующие противостояния:
+━━━━━━━━━━━━━━━━━━
+
+⚔️ {{STAGE}}
+📅 {{DATE}}
+
+РАСПИСАНИЕ МАТЧЕЙ
 
 {{MATCH_LIST}}
 
-📺 Трансляция: {{STREAM_LINK}}
+━━━━━━━━━━━━━━━━━━
 
-Подключайтесь, будет интересно! 🔥`;
+📺 ТРАНСЛЯЦИЯ
+{{STREAM LINK}}
+
+🔥 До встречи на трансляции!`;
 
 interface TemplateVars {
   tournament: string;
@@ -24,13 +31,17 @@ interface TemplateVars {
 }
 
 export function renderPostTemplate(vars: TemplateVars): string {
-  const header = vars.stage ? `${vars.stage} · ${vars.date}` : vars.date;
-  return POST_TEMPLATE
-    // Функция в replace — чтобы символы вроде "$&" в названии турнира не трактовались как шаблон.
-    .replace("{{STAGE}} · {{DATE}}", () => header)
-    .replace("{{TOURNAMENT_NAME}}", () => vars.tournament)
+  // Функции в replace — чтобы символы вроде "$&" в данных не трактовались как шаблон.
+  const text = POST_TEMPLATE.replace("{{TOURNAMENT_NAME}}", () => vars.tournament)
+    .replace("{{DATE}}", () => vars.date)
     .replace("{{MATCH_LIST}}", () => vars.matchList)
-    .replace("{{STREAM_LINK}}", () => vars.streamLink);
+    // Поддерживаем оба написания: {{STREAM LINK}} из шаблона и {{STREAM_LINK}} для совместимости.
+    .replace(/\{\{STREAM[ _]LINK\}\}/, () => vars.streamLink);
+
+  // Пустая стадия не должна оставлять строку «⚔️ » — убираем строку целиком.
+  return vars.stage
+    ? text.replace("{{STAGE}}", () => vars.stage)
+    : text.replace(/^.*\{\{STAGE\}\}.*\n/m, "");
 }
 
 /** "9:00" → "09:00". Некорректное время оставляем как есть. */

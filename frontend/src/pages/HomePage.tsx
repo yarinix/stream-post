@@ -30,7 +30,7 @@ export default function HomePage() {
         </a>
         <a className="tool" href="#/schedule?tab=text">
           <span className="tool__name">Текст поста</span>
-          <span className="tool__text">Шаблон со списком матчей, датой и ссылкой на стрим — можно править и копировать</span>
+          <span className="tool__text">Шаблон с разделителями, списком матчей и ссылкой на стрим — превью, правка и копирование</span>
           <span className="tool__arrow" aria-hidden="true">
             →
           </span>
@@ -50,7 +50,7 @@ export default function HomePage() {
         <BackendStatus />
       </section>
 
-      <footer className="footer">v0.4.0</footer>
+      <footer className="footer">v0.4.1</footer>
     </main>
   );
 }

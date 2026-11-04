@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 
 import {
   loadPostTextDraft,
+  POST_TEMPLATE_VERSION,
   savePostTextDraft,
   type PostTextDraft,
   type PostTextSettings,
@@ -41,7 +42,7 @@ export function usePostText(data: ScheduleData, settings: PostTextSettings): Pos
   const outdated = Boolean(manual && manual.signature !== signature);
 
   const setText = useCallback(
-    (value: string) => setManual({ signature, text: value }),
+    (value: string) => setManual({ signature, text: value, version: POST_TEMPLATE_VERSION }),
     [signature],
   );
   const regenerate = useCallback(() => setManual(null), []);

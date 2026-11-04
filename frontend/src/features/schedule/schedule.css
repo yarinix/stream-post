@@ -714,13 +714,152 @@ select.input {
 }
 
 .post-text__area {
-  min-height: 300px;
+  min-height: 360px;
   padding: 14px;
+  /* Моноширинный шрифт нужен, чтобы разделители из ━ выглядели ровной линией. */
   font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
   font-size: 16px; /* 16px — чтобы iPhone не приближал страницу при вводе */
   line-height: 1.55;
   white-space: pre-wrap;
   resize: vertical;
+}
+
+.post-text__tabs {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 12px;
+  padding: 4px;
+  background: rgba(11, 13, 20, 0.55);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+}
+
+.post-text__tab {
+  flex: 1;
+  min-height: 42px;
+  padding: 8px 10px;
+  border: 0;
+  border-radius: 9px;
+  background: transparent;
+  color: var(--muted);
+  font: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.post-text__tab--active {
+  background: var(--accent);
+  color: #fff;
+  box-shadow: 0 4px 14px rgba(124, 92, 255, 0.3);
+}
+
+.post-text__meta {
+  margin: 10px 0 0;
+  color: var(--muted);
+  font-size: 12px;
+  text-align: right;
+}
+
+.post-text__meta span {
+  color: inherit;
+}
+
+.post-text__meta--over,
+.post-text__meta--over span {
+  color: var(--error);
+}
+
+/* Красивое превью подписи — карточка в стиле сообщения Telegram */
+.post-preview {
+  padding: 18px 16px;
+  background: linear-gradient(160deg, #1c2135 0%, #111524 100%);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.28);
+  overflow: hidden;
+}
+
+.post-preview__inner {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.post-preview__gap {
+  height: 6px;
+}
+
+.post-preview__rule {
+  height: 2px;
+  margin: 2px 0;
+  background: linear-gradient(90deg, transparent, var(--accent) 18%, var(--accent) 82%, transparent);
+  border-radius: 2px;
+}
+
+.post-preview p,
+.post-preview a {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.post-preview__title {
+  color: var(--text);
+  font-size: 19px;
+  font-weight: 700;
+  line-height: 1.3;
+  letter-spacing: 0.2px;
+}
+
+.post-preview__section {
+  color: var(--accent);
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.4;
+  letter-spacing: 1.4px;
+}
+
+.post-preview__meta {
+  color: var(--text);
+  font-size: 14px;
+  line-height: 1.45;
+}
+
+.post-preview__match {
+  display: flex;
+  gap: 10px;
+  color: var(--text);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.post-preview__time {
+  flex: none;
+  color: var(--accent);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-weight: 700;
+}
+
+.post-preview__link {
+  color: #8ab4ff;
+  font-size: 14px;
+  line-height: 1.45;
+  text-decoration: none;
+}
+
+.post-preview__outro {
+  color: var(--text);
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.45;
+}
+
+.post-preview__text {
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1.45;
 }
 
 .post-text__facts {
