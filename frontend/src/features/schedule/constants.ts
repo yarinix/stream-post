@@ -22,6 +22,18 @@ export interface PostModeInfo {
   scoreLabel: string;
   /** Подсказка под полями счёта. */
   scoreHint: string;
+  /** Подпись к полям коэффициентов (только «Предикты»). */
+  oddsLabel: string;
+  /** Подсказка к полям коэффициентов. */
+  oddsHint: string;
+  /** Маленькая надпись над заголовком на постере. */
+  posterEyebrow: string;
+  /** Строки большого наклонного заголовка на постере. */
+  posterHeadline: string[];
+  /** Подзаголовок на постере. */
+  posterSubline: string;
+  /** Призыв в футере постера. */
+  posterFooterLead: string;
   /** Суффикс имени PNG-файла. */
   fileSuffix: string;
 }
@@ -40,6 +52,12 @@ export const POST_MODES: Record<PostMode, PostModeInfo> = {
     sectionTitle: "РАСПИСАНИЕ МАТЧЕЙ",
     scoreLabel: "",
     scoreHint: "",
+    oddsLabel: "",
+    oddsHint: "",
+    posterEyebrow: "РАСПИСАНИЕ МАТЧЕЙ",
+    posterHeadline: ["РАСПИСАНИЕ МАТЧЕЙ"],
+    posterSubline: "",
+    posterFooterLead: "",
     fileSuffix: "",
   },
   predict: {
@@ -49,11 +67,17 @@ export const POST_MODES: Record<PostMode, PostModeInfo> = {
     eyebrow: "MLBB · ПРОГНОЗ СТРИМЕРА",
     title: "Предикты на матчи",
     subtitle:
-      "Выставьте предполагаемый счёт каждого матча — получится картинка в том же стиле, что и расписание. Прогнозы сохраняются отдельно от финальных результатов.",
+      "Укажите коэффициенты на победу — они появятся в плашках на картинке. Прогноз счёта задаётся отдельно и попадает в текст поста.",
     headerLabel: "ПРЕДИКТЫ СТРИМЕРА",
     sectionTitle: "ПРОГНОЗЫ НА МАТЧИ",
     scoreLabel: "Прогноз счёта",
-    scoreHint: "Счёт, который ждёт стример. Хранится отдельно от итогов дня.",
+    scoreHint: "Счёт, который ждёт стример: уходит в текст поста. Хранится отдельно от итогов дня.",
+    oddsLabel: "Коэффициенты (для картинки)",
+    oddsHint: "Например 1.48 и 2.62. Незаполненное значение на картинке остаётся прочерком.",
+    posterEyebrow: "ПРЕДИКТЫ",
+    posterHeadline: ["ПРЕДИКТЫ", "НА ДЕНЬ"],
+    posterSubline: "Кто победит сегодня?",
+    posterFooterLead: "Делитесь своими прогнозами в комментариях!",
     fileSuffix: "predict",
   },
   results: {
@@ -68,6 +92,12 @@ export const POST_MODES: Record<PostMode, PostModeInfo> = {
     sectionTitle: "РЕЗУЛЬТАТЫ МАТЧЕЙ",
     scoreLabel: "Финальный счёт",
     scoreHint: "Победитель подсвечивается на картинке. Незаполненные матчи остаются без счёта.",
+    oddsLabel: "",
+    oddsHint: "",
+    posterEyebrow: "ИТОГ ДНЯ",
+    posterHeadline: ["ИТОГ ДНЯ"],
+    posterSubline: "Как прошёл игровой день?",
+    posterFooterLead: "Следите за новостями:",
     fileSuffix: "results",
   },
 };

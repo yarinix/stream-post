@@ -23,7 +23,7 @@ export default function HomePage() {
         </a>
         <a className="tool" href="#/schedule?mode=predict">
           <span className="tool__name">Предикты</span>
-          <span className="tool__text">Выставьте предполагаемый счёт — получится картинка в том же стиле</span>
+          <span className="tool__text">Коэффициенты на победу в плашках, прогноз счёта — в тексте поста</span>
           <span className="tool__arrow" aria-hidden="true">
             →
           </span>
@@ -64,7 +64,7 @@ export default function HomePage() {
         <BackendStatus />
       </section>
 
-      <footer className="footer">v0.5.0</footer>
+      <footer className="footer">v0.6.0</footer>
     </main>
   );
 }

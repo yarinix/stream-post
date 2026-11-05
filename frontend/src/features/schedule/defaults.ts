@@ -20,6 +20,8 @@ export function createMatch(partial: Partial<Omit<Match, "id">> = {}): Match {
     predictB: null,
     resultA: null,
     resultB: null,
+    oddsA: null,
+    oddsB: null,
     ...partial,
   };
 }

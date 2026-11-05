@@ -1,7 +1,13 @@
 import type { Theme } from "../types";
 import { hexToRgba, roundRectPath, type Ctx } from "./helpers";
 
-export function drawBackground(ctx: Ctx, width: number, height: number, theme: Theme): void {
+export function drawBackground(
+  ctx: Ctx,
+  width: number,
+  height: number,
+  theme: Theme,
+  frameAlpha = 0.3,
+): void {
   const base = ctx.createLinearGradient(0, 0, 0, height);
   base.addColorStop(0, theme.bgTop);
   base.addColorStop(1, theme.bgBottom);
@@ -37,7 +43,7 @@ export function drawBackground(ctx: Ctx, width: number, height: number, theme: T
   // Рамка
   ctx.save();
   roundRectPath(ctx, 24, 24, width - 48, height - 48, 28);
-  ctx.strokeStyle = hexToRgba(theme.accent, 0.3);
+  ctx.strokeStyle = hexToRgba(theme.accent, frameAlpha);
   ctx.lineWidth = 2;
   ctx.stroke();
   ctx.restore();
