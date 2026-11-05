@@ -1,5 +1,6 @@
 import { CANVAS_PRESETS, MATCH_FORMATS, MAX_MATCHES, THEMES } from "./constants";
 import { createDefaultSchedule, newMatchId } from "./defaults";
+import { sanitizeOdds } from "./odds";
 import { clampScore } from "./score";
 import type { CanvasPresetId, Match, MatchFormat, ScheduleData, ThemeId } from "./types";
 
@@ -31,6 +32,8 @@ function sanitizeMatch(input: unknown): Match | null {
     predictB: clampScore(raw.predictB),
     resultA: clampScore(raw.resultA),
     resultB: clampScore(raw.resultB),
+    oddsA: sanitizeOdds(raw.oddsA),
+    oddsB: sanitizeOdds(raw.oddsB),
   };
 }
 

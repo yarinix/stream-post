@@ -2,6 +2,7 @@ import { findTeamLogo } from "../logos/types";
 import type { TeamLogo } from "../logos/types";
 import { MATCH_FORMATS, MAX_MATCHES, POST_MODES } from "../constants";
 import { addHours, createMatch } from "../defaults";
+import { oddsFields, setOdds, type OddsSide } from "../odds";
 import { scoreFields, setScore, type ScoreSide } from "../score";
 import type { Match, MatchFormat, PostMode } from "../types";
 
@@ -50,6 +51,7 @@ function LogoPicker({ label, teamName, value, logos, onChange }: LogoPickerProps
 export default function MatchesEditor({ matches, logos, mode, onChange }: MatchesEditorProps) {
   const modeInfo = POST_MODES[mode];
   const fields = scoreFields(mode);
+  const odds = oddsFields(mode);
 
   function updateMatch(id: string, patch: Partial<Match>) {
     onChange(matches.map((match) => (match.id === id ? { ...match, ...patch } : match)));
@@ -59,6 +61,10 @@ export default function MatchesEditor({ matches, logos, mode, onChange }: Matche
     onChange(
       matches.map((match) => (match.id === id ? setScore(match, mode, side, raw) : match)),
     );
+  }
+
+  function updateOdds(id: string, side: OddsSide, raw: string) {
+    onChange(matches.map((match) => (match.id === id ? setOdds(match, side, raw) : match)));
   }
 
   function removeMatch(id: string) {
@@ -112,6 +118,7 @@ export default function MatchesEditor({ matches, logos, mode, onChange }: Matche
         </span>
       </div>
 
+      {modeInfo.oddsHint ? <p className="panel__hint">{modeInfo.oddsHint}</p> : null}
       {modeInfo.scoreHint ? <p className="panel__hint">{modeInfo.scoreHint}</p> : null}
       {matches.length === 0 ? <p className="panel__empty">Матчей пока нет. Добавьте первый.</p> : null}
 
@@ -207,6 +214,42 @@ export default function MatchesEditor({ matches, logos, mode, onChange }: Matche
                 onChange={(event) => updateMatch(match.id, { teamB: event.target.value })}
               />
             </div>
+
+            {odds ? (
+              <div className="match__odds">
+                <div className="match__score-head">
+                  <span className="match__odds-label">{modeInfo.oddsLabel}</span>
+                  <span className="match__score-teams">
+                    {match.teamA.trim() || "Команда 1"} / {match.teamB.trim() || "Команда 2"}
+                  </span>
+                </div>
+                <div className="match__score-fields">
+                  <input
+                    className="input input--odds"
+                    type="text"
+                    inputMode="decimal"
+                    maxLength={7}
+                    placeholder="1.48"
+                    value={match[odds.a] ?? ""}
+                    aria-label={`${modeInfo.oddsLabel}, команда 1, матч ${index + 1}`}
+                    onChange={(event) => updateOdds(match.id, "a", event.target.value)}
+                  />
+                  <span className="match__score-sep" aria-hidden="true">
+                    /
+                  </span>
+                  <input
+                    className="input input--odds"
+                    type="text"
+                    inputMode="decimal"
+                    maxLength={7}
+                    placeholder="2.62"
+                    value={match[odds.b] ?? ""}
+                    aria-label={`${modeInfo.oddsLabel}, команда 2, матч ${index + 1}`}
+                    onChange={(event) => updateOdds(match.id, "b", event.target.value)}
+                  />
+                </div>
+              </div>
+            ) : null}
 
             {fields ? (
               <div className="match__score">

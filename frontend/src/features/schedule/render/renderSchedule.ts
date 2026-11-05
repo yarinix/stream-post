@@ -6,18 +6,23 @@ import { drawBackground } from "./drawBackground";
 import { drawFooter, footerHeight } from "./drawFooter";
 import { drawHeader } from "./drawHeader";
 import { drawMatches } from "./drawMatches";
+import { renderPoster } from "./renderPoster";
 
 const PADDING = 64;
 
 /**
  * Рисует картинку и возвращает canvas. Шрифты и логотипы должны быть загружены заранее.
- * mode меняет надпись в шапке и содержимое центральной колонки матчей (VS / прогноз / результат).
+ * «Предикты» и «Итоги дня» используют отдельный постер-рендер; расписание — классическую вёрстку.
  */
 export function renderSchedule(
   data: ScheduleData,
   logos: RenderLogo[] = [],
   mode: PostMode = "schedule",
 ): HTMLCanvasElement {
+  if (mode === "predict" || mode === "results") {
+    return renderPoster(data, logos, mode);
+  }
+
   const preset = CANVAS_PRESETS[data.preset];
   const theme = THEMES[data.theme];
   const { width, height } = preset;

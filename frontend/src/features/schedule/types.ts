@@ -17,12 +17,15 @@ export interface Match {
   /** Явно выбранный логотип (id из библиотеки). null — подобрать по названию команды. */
   logoA?: string | null;
   logoB?: string | null;
-  /** Прогноз стримера. null — счёт ещё не выставлен. */
+  /** Прогноз стримера. null — счёт ещё не выставлен. Используется в тексте поста. */
   predictA?: number | null;
   predictB?: number | null;
   /** Финальный результат матча. null — матч ещё не сыгран. */
   resultA?: number | null;
   resultB?: number | null;
+  /** Коэффициенты на победу (только картинка «Предикты»). null — не заполнено. */
+  oddsA?: string | null;
+  oddsB?: string | null;
 }
 
 export interface ScheduleData {

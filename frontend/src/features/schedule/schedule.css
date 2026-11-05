@@ -552,6 +552,31 @@ select.input {
   font-variant-numeric: tabular-nums;
 }
 
+/* 16px+ — иначе iOS зумирует поле при фокусе. */
+.input--odds {
+  min-height: 48px;
+  padding: 0 8px;
+  font-size: 18px;
+  font-weight: 800;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.5px;
+}
+
+.match__odds-label {
+  color: var(--accent);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.match__odds {
+  margin-top: 10px;
+  padding: 10px;
+  background: rgba(255, 255, 255, 0.045);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+}
+
 .match__score-sep {
   color: var(--muted);
   font-size: 20px;
