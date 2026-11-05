@@ -81,7 +81,7 @@ export default function ScheduleForm({ data, onChange }: ScheduleFormProps) {
           </Field>
         </div>
 
-        <Field label="Канал внизу картинки" hint="Необязательно. Оставьте пустым, чтобы скрыть.">
+        <Field label="Ссылка на стрим" hint="Для текста поста и картинки расписания. Оставьте пустой, чтобы скрыть.">
           <input
             className="input"
             value={data.channel}
@@ -91,6 +91,19 @@ export default function ScheduleForm({ data, onChange }: ScheduleFormProps) {
             autoComplete="off"
             enterKeyHint="done"
             onChange={(event) => onChange({ channel: event.target.value })}
+          />
+        </Field>
+
+        <Field label="Telegram-канал" hint="Иконка и ссылка внизу постера «Итоги дня». Оставьте пустым, чтобы скрыть.">
+          <input
+            className="input"
+            value={data.telegramChannel}
+            maxLength={50}
+            placeholder="t.me/your_channel"
+            autoCapitalize="none"
+            autoComplete="off"
+            enterKeyHint="done"
+            onChange={(event) => onChange({ telegramChannel: event.target.value })}
           />
         </Field>
 

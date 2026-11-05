@@ -2,20 +2,27 @@ import { CANVAS_PRESETS, POST_MODES, THEMES } from "../constants";
 import { oddsText } from "../odds";
 import { findTeamLogo } from "../logos/types";
 import type { RenderLogo } from "../logos/types";
-import { getScore, winnerSide } from "../score";
+import { formatScore, getScore, winnerSide } from "../score";
 import type { Match, PostMode, ScheduleData, Theme } from "../types";
 import { drawBackground } from "./drawBackground";
-import { fitFontSize, setFont, truncateToWidth, withLetterSpacing, type Ctx, type Region } from "./helpers";
+import {
+  fitFontSize,
+  hexToRgba,
+  setFont,
+  truncateToWidth,
+  withLetterSpacing,
+  type Ctx,
+  type Region,
+} from "./helpers";
 import {
   POSTER_PADDING,
   drawChatIcon,
   drawPosterCard,
-  drawPosterLogo,
+  drawPosterLogoSlot,
   drawPosterPill,
   drawSkewedText,
-  drawTwitchIcon,
+  drawTelegramIcon,
   measureSkewed,
-  type PillState,
 } from "./posterCommon";
 
 type PosterMode = Exclude<PostMode, "schedule">;
@@ -33,8 +40,6 @@ function baseGap(count: number): number {
 /** Раскладка карточек: подстраивается под количество матчей и доступную высоту. */
 function layoutRows(count: number, region: Region): { rowHeight: number; gap: number; startY: number } {
   const available = Math.max(0, region.h);
-  // Карточки заполняют почти всю область между шапкой и футером: на референсе
-  // между акцентной линией и первой карточкой нет большой пустой «дыры».
   const maxRow = Math.min(420, Math.max(90, available * 0.55));
   let gap = baseGap(count);
   let rowHeight = Math.min(maxRow, Math.max(60, (available - gap * (count - 1)) / count));
@@ -53,10 +58,17 @@ function layoutRows(count: number, region: Region): { rowHeight: number; gap: nu
     total = rowHeight * count + gap * (count - 1);
   }
 
+  // Блок карточек центрируется в отведённой области: поля сверху и снизу равны.
   const startY = region.y + Math.max(0, (available - total) / 2);
   return { rowHeight, gap, startY };
 }
 
+/**
+ * Карточка матча построена на одной симметричной сетке:
+ * верхняя полоса — логотип / название / «vs» / название / логотип,
+ * нижняя — три колонки значений строго по центру и по краям.
+ * У обеих сторон одинаковые слоты, отступы и максимальная ширина названия.
+ */
 function drawRow(
   ctx: Ctx,
   match: Match,
@@ -64,91 +76,152 @@ function drawRow(
   y: number,
   w: number,
   h: number,
+  k: number,
   theme: Theme,
   logos: RenderLogo[],
   mode: PosterMode,
 ): void {
   drawPosterCard(ctx, x, y, w, h, Math.min(20, h * 0.16), theme);
 
-  const inset = Math.max(20, w * 0.025);
-  const logoSize = Math.min(h * 0.4, 108, w * 0.11);
+  const inset = Math.max(24, w * 0.03);
+  const centerX = x + w / 2;
+  const teamsY = y + h * 0.33;
+  const valuesY = y + h * 0.71;
+
+  const logoSize = Math.min(h * 0.36, 96, w * 0.095);
+  const logoACx = x + inset + logoSize / 2;
+  const logoBCx = x + w - inset - logoSize / 2;
+  const gapAfterLogo = Math.max(14, w * 0.018);
+  const nameAX = logoACx + logoSize / 2 + gapAfterLogo;
+  const nameBX = logoBCx - logoSize / 2 - gapAfterLogo;
+  const centerSafe = Math.max(34, w * 0.055);
+  const nameMaxW = Math.max(60, centerX - centerSafe - nameAX);
+
   const logoA = findTeamLogo(logos, match.teamA, match.logoA);
   const logoB = findTeamLogo(logos, match.teamB, match.logoB);
+  const winner = winnerSide(match, mode);
+  const stateA = winner === "a" ? "win" : winner === "b" ? "lose" : "normal";
+  const stateB = winner === "b" ? "win" : winner === "a" ? "lose" : "normal";
 
-  const teamsY = y + h * 0.34;
-  const pillsY = y + h * 0.76;
-  const pillH = Math.min(Math.max(h * 0.25, 26), 62);
-  const pillW = Math.min(w * 0.21, 200);
-  const centerX = x + w / 2;
-  const vsHalf = Math.max(30, w * 0.045);
-
-  if (logoA) drawPosterLogo(ctx, logoA, x + inset, teamsY - logoSize / 2, logoSize);
-  if (logoB) drawPosterLogo(ctx, logoB, x + w - inset - logoSize, teamsY - logoSize / 2, logoSize);
-
-  const nameLeft = x + inset + (logoA ? logoSize + 18 : 0);
-  const nameRight = x + w - inset - (logoB ? logoSize + 18 : 0);
-  const maxNameWidth = Math.max(60, centerX - vsHalf - nameLeft);
-  const maxNameSize = Math.min(42, Math.max(20, h * 0.2));
+  drawPosterLogoSlot(ctx, logoACx, teamsY, logoSize, theme, stateA, logoA);
+  drawPosterLogoSlot(ctx, logoBCx, teamsY, logoSize, theme, stateB, logoB);
 
   const teamA = (match.teamA.trim() || "TBD").toUpperCase();
   const teamB = (match.teamB.trim() || "TBD").toUpperCase();
+  const maxNameSize = Math.min(44, Math.max(20, h * 0.22));
   const nameSize = Math.min(
-    fitFontSize(ctx, teamA, 800, maxNameWidth, maxNameSize, 18),
-    fitFontSize(ctx, teamB, 800, Math.max(60, nameRight - centerX - vsHalf), maxNameSize, 18),
+    fitFontSize(ctx, teamA, 800, nameMaxW, maxNameSize, 18),
+    fitFontSize(ctx, teamB, 800, nameMaxW, maxNameSize, 18),
   );
 
-  const winner = winnerSide(match, mode);
-  const colorA = winner === "a" ? theme.accent : winner === "b" ? "rgba(255, 255, 255, 0.5)" : "#ffffff";
-  const colorB = winner === "b" ? theme.accent : winner === "a" ? "rgba(255, 255, 255, 0.5)" : "#ffffff";
-
+  ctx.save();
   ctx.textBaseline = "middle";
   setFont(ctx, 800, nameSize);
   ctx.textAlign = "left";
-  ctx.fillStyle = colorA;
-  ctx.fillText(truncateToWidth(ctx, teamA, maxNameWidth), nameLeft, teamsY + 1);
+  ctx.fillStyle = stateA === "win" ? theme.accent : stateA === "lose" ? "rgba(255, 255, 255, 0.5)" : "#ffffff";
+  ctx.fillText(truncateToWidth(ctx, teamA, nameMaxW), nameAX, teamsY);
   ctx.textAlign = "right";
-  ctx.fillStyle = colorB;
-  ctx.fillText(truncateToWidth(ctx, teamB, Math.max(60, nameRight - centerX - vsHalf)), nameRight, teamsY + 1);
+  ctx.fillStyle = stateB === "win" ? theme.accent : stateB === "lose" ? "rgba(255, 255, 255, 0.5)" : "#ffffff";
+  ctx.fillText(truncateToWidth(ctx, teamB, nameMaxW), nameBX, teamsY);
 
-  setFont(ctx, 700, Math.max(16, nameSize * 0.62));
+  // Якорь центральной оси: до матча «vs», после — время начала.
+  // В обеих режимах он на одной горизонтали с названиями и строго по центру.
+  const anchor = mode === "predict" ? "vs" : match.time.trim() || "—";
+  setFont(ctx, 700, Math.max(15, Math.min(23, nameSize * 0.58)));
   ctx.textAlign = "center";
   ctx.fillStyle = "rgba(255, 255, 255, 0.42)";
-  ctx.fillText("vs", centerX, teamsY + 1);
+  ctx.fillText(anchor, centerX, teamsY);
+  ctx.restore();
 
-  // Тонкий разделитель ровно между двумя плашками.
-  ctx.fillStyle = "rgba(255, 255, 255, 0.18)";
-  ctx.fillRect(centerX - 1, pillsY - pillH * 0.42, 2, pillH * 0.84);
+  const pillH = Math.min(Math.max(h * 0.26, 30), 68);
+  const labelSize = Math.max(13, Math.min(20, h * 0.105));
 
-  const score = mode === "results" ? getScore(match, "results") : null;
-  const textA = mode === "predict" ? oddsText(match, "a") : score ? String(score.a) : "—";
-  const textB = mode === "predict" ? oddsText(match, "b") : score ? String(score.b) : "—";
-  const stateA: PillState = winner === "a" ? "win" : winner === "b" ? "lose" : "normal";
-  const stateB: PillState = winner === "b" ? "win" : winner === "a" ? "lose" : "normal";
+  if (mode === "predict") {
+    // Три симметричные плашки: коэффициент / прогноз счёта / коэффициент.
+    const sideW = Math.min(w * 0.19, 190);
+    const centerW = Math.min(w * 0.26, 250);
+    const sideOffset = w * 0.285;
+    const prediction = getScore(match, "predict");
 
-  drawPosterPill(ctx, x + w * 0.3, pillsY, pillW, pillH, textA, theme, stateA);
-  drawPosterPill(ctx, x + w * 0.7, pillsY, pillW, pillH, textB, theme, stateB);
+    drawPosterPill(ctx, centerX - sideOffset, valuesY, sideW, pillH, oddsText(match, "a"), theme, "normal");
+    drawPosterPill(
+      ctx,
+      centerX,
+      valuesY,
+      centerW,
+      pillH,
+      prediction ? formatScore(prediction) : "? : ?",
+      theme,
+      "accent",
+    );
+    drawPosterPill(ctx, centerX + sideOffset, valuesY, sideW, pillH, oddsText(match, "b"), theme, "normal");
+
+    if (h >= 160) {
+      ctx.save();
+      setFont(ctx, 700, labelSize);
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.fillStyle = "rgba(255, 255, 255, 0.42)";
+      ctx.fillText("ПРОГНОЗ СЧЁТА", centerX, valuesY + pillH / 2 + 19 * k);
+      ctx.restore();
+    }
+  } else {
+    // Итоги: счёт — единый бейдж строго по центру, без «разбросанных» цифр.
+    const score = getScore(match, "results");
+    const centerW = Math.min(w * 0.32, 290);
+    drawPosterPill(
+      ctx,
+      centerX,
+      valuesY,
+      centerW,
+      pillH,
+      score ? formatScore(score) : "— : —",
+      theme,
+      score ? "accent" : "normal",
+    );
+
+    // Симметричные направляющие по бокам бейджа заполняют пустые зоны.
+    const lineW = Math.min(w * 0.11, 110);
+    const lineGap = 22 * k;
+    ctx.fillStyle = hexToRgba(theme.accent, 0.4);
+    ctx.fillRect(centerX - centerW / 2 - lineGap - lineW, valuesY - 1, lineW, 2);
+    ctx.fillRect(centerX + centerW / 2 + lineGap, valuesY - 1, lineW, 2);
+
+    if (h >= 160) {
+      ctx.save();
+      setFont(ctx, 700, labelSize);
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.fillStyle = "rgba(255, 255, 255, 0.42)";
+      ctx.fillText(`${match.format} · ФИНАЛЬНЫЙ СЧЁТ`, centerX, valuesY + pillH / 2 + 19 * k);
+      ctx.restore();
+    }
+  }
 }
 
 function drawMatches(
   ctx: Ctx,
   matches: Match[],
   region: Region,
+  k: number,
   theme: Theme,
   logos: RenderLogo[],
   mode: PosterMode,
 ): void {
   if (matches.length === 0) {
+    ctx.save();
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
     setFont(ctx, 700, 36);
     ctx.fillStyle = "rgba(255, 255, 255, 0.45)";
     ctx.fillText("Добавьте матчи", region.x + region.w / 2, region.y + region.h / 2);
+    ctx.restore();
     return;
   }
 
   const { rowHeight, gap, startY } = layoutRows(matches.length, region);
   matches.forEach((match, index) => {
-    drawRow(ctx, match, region.x, startY + index * (rowHeight + gap), region.w, rowHeight, theme, logos, mode);
+    drawRow(ctx, match, region.x, startY + index * (rowHeight + gap), region.w, rowHeight, k, theme, logos, mode);
   });
 }
 
@@ -158,55 +231,68 @@ interface FooterOptions {
   top: number;
   height: number;
   theme: Theme;
-  channel: string;
+  /** Ссылка на Telegram-канал (только «Итоги дня»). */
+  telegram: string;
   mode: PosterMode;
   lead: string;
 }
 
+/** Единая сетка футера: точка слева, две строки по центру, иконка справа. */
 function drawFooter(ctx: Ctx, options: FooterOptions): void {
-  const { width, padding, top, height, theme, channel, mode, lead } = options;
+  const { width, padding, top, height, theme, telegram, mode, lead } = options;
   const k = height / 150;
 
   ctx.fillStyle = "rgba(255, 255, 255, 0.16)";
   ctx.fillRect(padding, top, width - padding * 2, 2);
 
-  const textX = padding + 30 * k;
-  ctx.fillStyle = theme.accent;
+  const leadSize = 27 * k;
+  const linkSize = 30 * k;
+  const line1H = 34 * k;
+  const line2H = 40 * k;
+  const lineGap = 8 * k;
+  const contentH = line1H + lineGap + line2H;
+  const contentTop = top + (height - contentH) / 2;
+  const midY = contentTop + contentH / 2;
+
+  const dotR = 7 * k;
+  const textX = padding + dotR * 2 + 18 * k;
+  const iconSize = 46 * k;
+  const iconX = width - padding - iconSize;
+  const maxTextW = Math.max(80, iconX - 24 * k - textX);
+
   ctx.beginPath();
-  ctx.arc(padding + 8 * k, top + 34 * k, 8 * k, 0, Math.PI * 2);
+  ctx.arc(padding + dotR, midY, dotR, 0, Math.PI * 2);
+  ctx.fillStyle = theme.accent;
   ctx.fill();
 
+  ctx.save();
   ctx.textAlign = "left";
-  ctx.textBaseline = "top";
+  ctx.textBaseline = "middle";
 
   if (mode === "predict") {
-    // Призыв из референса разбит на две строки, чтобы не упираться в иконку.
-    setFont(ctx, 600, 27 * k);
+    setFont(ctx, 600, leadSize);
     ctx.fillStyle = "rgba(255, 255, 255, 0.9)";
-    ctx.fillText("Делитесь своими прогнозами", textX, top + 20 * k);
-    ctx.fillText("в комментариях!", textX, top + 54 * k);
-    drawChatIcon(ctx, width - padding - 56 * k, top + 22 * k, 56 * k, theme);
+    ctx.fillText("Делитесь своими прогнозами", textX, contentTop + line1H / 2);
+    ctx.fillText("в комментариях!", textX, contentTop + line1H + lineGap + line2H / 2);
+    drawChatIcon(ctx, iconX, midY - iconSize / 2, iconSize, theme);
   } else {
-    setFont(ctx, 600, 27 * k);
+    setFont(ctx, 600, leadSize);
     ctx.fillStyle = "rgba(255, 255, 255, 0.78)";
-    ctx.fillText(lead, textX, top + 20 * k);
-    if (channel) {
-      const iconY = top + 62 * k;
-      drawTwitchIcon(ctx, textX, iconY, 34 * k, "#ffffff");
-      setFont(ctx, 800, 30 * k);
+    ctx.fillText(lead, textX, contentTop + line1H / 2);
+
+    if (telegram) {
+      setFont(ctx, 800, linkSize);
       ctx.fillStyle = "#ffffff";
-      ctx.fillText(
-        truncateToWidth(ctx, channel, width - padding * 2 - 80 * k),
-        textX + 46 * k,
-        iconY + 2 * k,
-      );
+      ctx.fillText(truncateToWidth(ctx, telegram, maxTextW), textX, contentTop + line1H + lineGap + line2H / 2);
     }
+    drawTelegramIcon(ctx, iconX, midY - iconSize / 2, iconSize);
   }
+  ctx.restore();
 }
 
 /**
  * Постер «Предикты» / «Итоги дня» в стиле референса: наклонный заголовок,
- * подзаголовок, акцентная линия, карточки с двумя плашками и призыв в футере.
+ * подзаголовок, акцентная линия, симметричные карточки и футер.
  * Расписание рисуется старым конвейером renderSchedule и не затрагивается.
  */
 export function renderPoster(
@@ -225,7 +311,6 @@ export function renderPoster(
   const ctx = canvas.getContext("2d");
   if (!ctx) throw new Error("Canvas не поддерживается в этом браузере");
 
-  // Рамка на референсе заметнее, чем в расписании.
   drawBackground(ctx, width, height, theme, 0.55);
 
   const pad = POSTER_PADDING;
@@ -233,7 +318,7 @@ export function renderPoster(
   const compact = height <= 1100;
   const k = compact ? 0.82 : 1;
 
-  // --- Шапка ---
+  // --- Шапка: все элементы выровнены по левой границе pad ---
   let y = pad + 20 * k;
   const eyebrowSize = 30 * k;
   setFont(ctx, 800, eyebrowSize);
@@ -274,23 +359,23 @@ export function renderPoster(
     top: footerTop,
     height: footerHeight,
     theme,
-    channel: data.channel.trim(),
+    telegram: data.telegramChannel.trim(),
     mode,
     lead: info.posterFooterLead,
   });
 
-  // --- Карточки матчей ---
-  const gapTop = 24 * k;
-  const gapBottom = (compact ? 40 : 28) * k;
+  // --- Карточки: одинаковые вертикальные поля сверху и снизу ---
+  const gapV = 28 * k;
   drawMatches(
     ctx,
     data.matches,
     {
       x: pad,
-      y: headerBottom + gapTop,
+      y: headerBottom + gapV,
       w: innerWidth,
-      h: Math.max(0, footerTop - (headerBottom + gapTop) - gapBottom),
+      h: Math.max(0, footerTop - headerBottom - 2 * gapV),
     },
+    k,
     theme,
     logos,
     mode,

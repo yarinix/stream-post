@@ -58,6 +58,7 @@ function sanitize(input: unknown): ScheduleData | null {
     date: asString(raw.date, base.date),
     timezone: asString(raw.timezone, base.timezone),
     channel: asString(raw.channel, base.channel),
+    telegramChannel: asString(raw.telegramChannel, base.telegramChannel),
     matches,
     preset,
     theme,

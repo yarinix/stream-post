@@ -23,14 +23,14 @@ export default function HomePage() {
         </a>
         <a className="tool" href="#/schedule?mode=predict">
           <span className="tool__name">Предикты</span>
-          <span className="tool__text">Коэффициенты на победу в плашках, прогноз счёта — в тексте поста</span>
+          <span className="tool__text">Коэффициенты и прогноз счёта в плашках на картинке — и текст поста</span>
           <span className="tool__arrow" aria-hidden="true">
             →
           </span>
         </a>
         <a className="tool" href="#/schedule?mode=results">
           <span className="tool__name">Итоги дня</span>
-          <span className="tool__text">Финальные результаты матчей с подсветкой победителя</span>
+          <span className="tool__text">Финальный счёт единой плашкой, подсветка победителя и ссылка на Telegram</span>
           <span className="tool__arrow" aria-hidden="true">
             →
           </span>
@@ -64,7 +64,7 @@ export default function HomePage() {
         <BackendStatus />
       </section>
 
-      <footer className="footer">v0.6.0</footer>
+      <footer className="footer">v0.6.1</footer>
     </main>
   );
 }

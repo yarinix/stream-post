@@ -51,6 +51,7 @@ export function createDefaultSchedule(): ScheduleData {
     date: todayIso(),
     timezone: "МСК",
     channel: "twitch.tv/your_channel",
+    telegramChannel: "t.me/your_channel",
     preset: "post",
     theme: "violet",
     matches: [
