@@ -35,6 +35,8 @@ export interface ScheduleData {
   date: string;
   timezone: string;
   channel: string;
+  /** Ссылка на Telegram-канал для футера постера «Итоги дня». */
+  telegramChannel: string;
   matches: Match[];
   preset: CanvasPresetId;
   theme: ThemeId;
